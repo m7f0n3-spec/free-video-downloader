@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Downloader</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #0b0f19;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: all 0.2s ease; }
+        body {
+            background-color: var(--bg);
+            background-image: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15), transparent 50%);
+            color: var(--text);
+            font-family: 'Plus Jakarta Sans', 'Vazirmatn', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            width: 100%;
+            padding: 15px 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        nav { display: flex; gap: 10px; }
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 10px;
+        }
+        nav a:hover, nav a.active { color: #fff; background: rgba(255, 255, 255, 0.08); }
+
+        .lang-select {
+            background: #1e293b;
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .container {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            margin-top: 60px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .container h2 { font-size: 1.8rem; margin-bottom: 20px; }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 18px;
+            margin: 15px 0 20px 0;
+            border: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.6);
+            color: #fff;
+            border-radius: 12px;
+            outline: none;
+            font-size: 1rem;
+        }
+        input[type="text"]:focus { border-color: var(--primary); }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        button:hover { background-color: var(--primary-hover); }
+
+        .progress-bar {
+            width: 100%;
+            background-color: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .progress {
+            width: 0%;
+            height: 22px;
+            background-color: #10b981;
+            text-align: center;
+            color: white;
+            line-height: 22px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <nav>
+            <a href="/" data-key="nav-home">Home</a>
+            <a href="/youtube" class="active">YouTube</a>
+            <a href="/facebook">Facebook</a>
+            <a href="/instagram">Instagram</a>
+            <a href="/tiktok">TikTok</a>
+        </nav>
+        <select class="lang-select" onchange="changeLanguage(this.value)">
+            <option value="en" selected>English</option>
+            <option value="ku">کوردی</option>
+            <option value="ar">العربية</option>
+        </select>
+    </header>
+
+    <div class="container">
+        <h2 data-key="dl-title">Download Video</h2>
+        <input type="text" id="videoUrl" data-key-ph="input-ph" placeholder="Paste video link here...">
+        <button onclick="startDownload()" data-key="btn-dl">Download</button>
+
+        <div class="progress-bar" id="progressBarContainer">
+            <div class="progress" id="progressBar">0%</div>
+        </div>
+    </div>
+
+    <script>
+        const translations = {
+            en: {
+                "nav-home": "Home",
+                "dl-title": "Download Video",
+                "input-ph": "Paste video link here...",
+                "btn-dl": "Download",
+                "msg-empty": "Please enter a URL!",
+                "msg-dl": "Downloading...",
+                "msg-done": "Completed!",
+                "msg-err": "Error occurred during download.",
+                "msg-server": "Server Connection Error!"
+            },
+            ku: {
+                "nav-home": "سەرەکی",
+                "dl-title": "داگرتنی ڤیدیۆ",
+                "input-ph": "لینکی ڤیدیۆکە لێرە دابنێ...",
+                "btn-dl": "داونلۆدکردن",
+                "msg-empty": "تکایە لینکێک دابنێ!",
+                "msg-dl": "داگرتن...",
+                "msg-done": "تەواوبوو!",
+                "msg-err": "هەڵەیەک ڕوویدا لە کاتی داگرتن.",
+                "msg-server": "کێشەی پەیوەندیکردن بە سێرڤەر!"
+            },
+            ar: {
+                "nav-home": "الرئيسية",
+                "dl-title": "تحميل الفيديو",
+                "input-ph": "ألصق رابط الفيديو هنا...",
+                "btn-dl": "تحميل",
+                "msg-empty": "الرجاء إدخال الرابط!",
+                "msg-dl": "جاري التحميل...",
+                "msg-done": "اكتمل!",
+                "msg-err": "حدث خطأ أثناء التحميل.",
+                "msg-server": "خطأ في الاتصال بالسيرفر!"
+            }
+        };
+
+        let currentLang = 'en';
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            document.documentElement.lang = lang;
+            document.documentElement.dir = (lang === 'en') ? 'ltr' : 'rtl';
+            
+            document.querySelectorAll('[data-key]').forEach(elem => {
+                const key = elem.getAttribute('data-key');
+                if (translations[lang][key]) elem.innerText = translations[lang][key];
+            });
+
+            document.querySelectorAll('[data-key-ph]').forEach(elem => {
+                const key = elem.getAttribute('data-key-ph');
+                if (translations[lang][key]) elem.placeholder = translations[lang][key];
+            });
+        }
+
+        async function startDownload() {
+            const url = document.getElementById('videoUrl').value;
+            const progressBarContainer = document.getElementById('progressBarContainer');
+            const progressBar = document.getElementById('progressBar');
+
+            if (!url) { alert(translations[currentLang]["msg-empty"]); return; }
+
+            progressBarContainer.style.display = 'block';
+            progressBar.style.width = '50%';
+            progressBar.innerText = translations[currentLang]["msg-dl"];
+
+            try {
+                const response = await fetch('/download', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    progressBar.style.width = '100%';
+                    progressBar.innerText = translations[currentLang]["msg-done"];
+
+                    const downloadUrl = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = "video.mp4";
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                } else {
+                    alert(translations[currentLang]["msg-err"]);
+                    progressBarContainer.style.display = 'none';
+                }
+            } catch (error) {
+                alert(translations[currentLang]["msg-server"]);
+                progressBarContainer.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
