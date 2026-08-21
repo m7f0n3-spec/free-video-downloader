@@ -370,7 +370,7 @@
             if (!url) { alert(translations[currentLang]["msg_empty"]); return; }
 
             progressBarContainer.style.display = 'block';
-            progressBar.style.width = '40%';
+            progressBar.style.width = '50%';
             progressBar.innerText = translations[currentLang]["msg_dl"];
 
             try {
@@ -380,20 +380,16 @@
                     body: JSON.stringify({ url: url, format: format })
                 });
 
-                if (response.ok) {
-                    const blob = await response.blob();
+                const data = await response.json();
+
+                if (response.ok && data.download_url) {
                     progressBar.style.width = '100%';
                     progressBar.innerText = translations[currentLang]["msg_done"];
 
-                    const downloadUrl = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = downloadUrl;
-                    a.download = format === 'mp3' ? "audio.mp3" : "video.mp4";
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
+                    // ڕەوانەکردنی بەکارهێنەر بۆ لینکی R2 بۆ داگرتنی فایلەکە
+                    window.location.href = data.download_url;
                 } else {
-                    alert(translations[currentLang]["msg_err"]);
+                    alert(data.error || translations[currentLang]["msg_err"]);
                     progressBarContainer.style.display = 'none';
                 }
             } catch (error) {

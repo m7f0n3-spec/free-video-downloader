@@ -1,8 +1,7 @@
 import os
-import time
-import glob
 import re
-from flask import Flask, render_template, request, send_file, jsonify
+import boto3
+from flask import Flask, render_template, request, jsonify
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import yt_dlp
@@ -16,19 +15,19 @@ limiter = Limiter(
     storage_uri="memory://"
 )
 
-DOWNLOAD_FOLDER = 'downloads'
-if not os.path.exists(DOWNLOAD_FOLDER):
-    os.makedirs(DOWNLOAD_FOLDER)
+# ڕێکخستنی زانیارییەکانی Cloudflare R2
+R2_ACCOUNT_ID = os.getenv('R2_ACCOUNT_ID')
+R2_ACCESS_KEY_ID = os.getenv('R2_ACCESS_KEY_ID')
+R2_SECRET_ACCESS_KEY = os.getenv('R2_SECRET_ACCESS_KEY')
+R2_BUCKET_NAME = os.getenv('R2_BUCKET_NAME', 'my-media-downloader')
 
-def cleanup_old_files():
-    now = time.time()
-    for filepath in glob.glob(os.path.join(DOWNLOAD_FOLDER, '*')):
-        if os.path.isfile(filepath):
-            if now - os.path.getmtime(filepath) > 600:
-                try:
-                    os.remove(filepath)
-                except Exception as e:
-                    print(f"Error deleting file {filepath}: {e}")
+# دروستکردنی پەیوەندی بە S3 Clientی R2
+s3_client = boto3.client(
+    's3',
+    endpoint_url=f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com" if R2_ACCOUNT_ID else None,
+    aws_access_key_id=R2_ACCESS_KEY_ID,
+    aws_secret_access_key=R2_SECRET_ACCESS_KEY
+)
 
 def sanitize_filename(title):
     return re.sub(r'[\\/*?:"<>|]', "", title)
@@ -71,7 +70,6 @@ def get_video_info():
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             
-            # دەرهێنانی کوالێتییە بەردەستەکان (Dynamic Quality Options)
             formats_available = []
             if 'formats' in info:
                 seen_heights = set()
@@ -83,7 +81,6 @@ def get_video_info():
                             'format_id': f"{height}p",
                             'label': f"{height}p"
                         })
-                # ڕێکخستن لە بەرزترینەوە بۆ نزمترین
                 formats_available.sort(key=lambda x: int(x['label'].replace('p', '')), reverse=True)
 
             return jsonify({
@@ -99,8 +96,6 @@ def get_video_info():
 @app.route('/download', methods=['POST'])
 @limiter.limit("10 per minute")
 def download_video():
-    cleanup_old_files()
-    
     data = request.json
     url = data.get('url')
     format_type = data.get('format', 'best')
@@ -123,8 +118,9 @@ def download_video():
         format_spec = 'best'
         postprocessors = []
 
+    # داگرتنی فایلەکە لە /tmp ڕاستەوخۆ لەسەر سێرڤەر
     ydl_opts = {
-        'outtmpl': os.path.join(DOWNLOAD_FOLDER, '%(title)s_%(id)s.%(ext)s'),
+        'outtmpl': '/tmp/%(title)s_%(id)s.%(ext)s',
         'format': format_spec,
         'noplaylist': True,
         'quiet': True,
@@ -142,9 +138,24 @@ def download_video():
 
             safe_title = sanitize_filename(info.get('title', 'video'))
             ext = 'mp3' if format_type == 'mp3' else 'mp4'
-            download_name = f"{safe_title}.{ext}"
+            file_key = f"{safe_title}.{ext}"
 
-        return send_file(filename, as_attachment=True, download_name=download_name)
+            # ١. بەرزکردنەوەی فایلەکە بۆ Cloudflare R2
+            s3_client.upload_file(filename, R2_BUCKET_NAME, file_key)
+
+            # ٢. سڕینەوەی فایلەکە لە Render بۆ هێشتنەوەی شوێنی بەتاڵ
+            if os.path.exists(filename):
+                os.remove(filename)
+
+            # ٣. دروستکردنی لینکی داگرتنی کاتی (Presigned URL) بۆ ماوەی ١ کاتژمێر
+            download_url = s3_client.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': R2_BUCKET_NAME, 'Key': file_key},
+                ExpiresIn=3600
+            )
+
+            return jsonify({'download_url': download_url})
+
     except Exception as e:
         print(f"Download Error: {str(e)}")
         return jsonify({'error': 'Download failed.'}), 500
