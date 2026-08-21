@@ -177,38 +177,35 @@
 
     <header>
         <nav>
-            <a href="/" data-key="nav-home">Home</a>
-            <a href="/youtube" class="{% if platform == 'YouTube' %}active{% endif %}">YouTube</a>
-            <a href="/facebook" class="{% if platform == 'Facebook' %}active{% endif %}">Facebook</a>
-            <a href="/instagram" class="{% if platform == 'Instagram' %}active{% endif %}">Instagram</a>
-            <a href="/tiktok" class="{% if platform == 'TikTok' %}active{% endif %}">TikTok</a>
+            <a href="/" data-i18n="nav_home">Home</a>
+            <a href="/youtube" data-i18n="nav_youtube">YouTube</a>
+            <a href="/facebook" data-i18n="nav_facebook">Facebook</a>
+            <a href="/instagram" class="active" data-i18n="nav_instagram">Instagram</a>
+            <a href="/tiktok" data-i18n="nav_tiktok">TikTok</a>
         </nav>
-        <select class="lang-select" onchange="changeLanguage(this.value)">
-            <option value="en" selected>English</option>
+        <select id="language-select" class="lang-select" onchange="changeLanguage(this.value)">
+            <option value="en">English</option>
             <option value="ku">کوردی</option>
             <option value="ar">العربية</option>
         </select>
     </header>
 
     <div class="container">
-        <h2> Instagram Downloader</h2>
+        <h2 data-i18n="ig_title">Instagram Downloader</h2>
         
         <div class="input-group">
-            <input type="text" id="videoUrl" data-key-ph="input-ph" placeholder="Paste video link here..." oninput="checkVideoInfo()">
-            <button class="btn-paste" onclick="pasteFromClipboard()" data-key="btn-paste">Paste</button>
+            <input type="text" id="videoUrl" data-i18n-ph="input_ph" placeholder="Paste video link here..." oninput="checkVideoInfo()">
+            <button class="btn-paste" onclick="pasteFromClipboard()" data-i18n="btn_paste">Paste</button>
         </div>
 
         <div class="options-group">
             <select id="qualitySelect" class="quality-select">
-                <option value="best" data-key="opt-best">Best Quality (Auto)</option>
-                <option value="1080p">1080p Full HD</option>
-                <option value="720p">720p HD</option>
-                <option value="480p">480p SD</option>
-                <option value="mp3" data-key="opt-mp3">Audio Only (MP3)</option>
+                <option value="best" data-i18n="opt_best">Best Quality (Auto)</option>
+                <option value="mp3" data-i18n="opt_mp3">Audio Only (MP3)</option>
             </select>
         </div>
 
-        <button class="btn-main" onclick="startDownload()" data-key="btn-dl">Download</button>
+        <button class="btn-main" onclick="startDownload()" data-i18n="btn_dl">Download</button>
 
         <div class="preview-card" id="previewCard">
             <img id="prevImg" src="" alt="Thumbnail">
@@ -224,46 +221,61 @@
     <script>
         const translations = {
             en: {
-                "nav-home": "Home",
-                "input-ph": "Paste video link here...",
-                "btn-paste": "Paste",
-                "opt-best": "Best Quality (Auto)",
-                "opt-mp3": "Audio Only (MP3)",
-                "btn-dl": "Download",
-                "msg-empty": "Please enter a URL!",
-                "msg-fetching": "Fetching video info...",
-                "msg-dl": "Downloading...",
-                "msg-done": "Completed!",
-                "msg-err": "Error occurred during download.",
-                "msg-server": "Server Connection Error!"
+                "nav_home": "Home",
+                "nav_youtube": "YouTube",
+                "nav_facebook": "Facebook",
+                "nav_instagram": "Instagram",
+                "nav_tiktok": "TikTok",
+                "ig_title": "Instagram Downloader",
+                "input_ph": "Paste video link here...",
+                "btn_paste": "Paste",
+                "opt_best": "Best Quality (Auto)",
+                "opt_mp3": "Audio Only (MP3)",
+                "btn_dl": "Download",
+                "msg_empty": "Please enter a URL!",
+                "msg_fetching": "Fetching video info...",
+                "msg_dl": "Downloading...",
+                "msg_done": "Completed!",
+                "msg_err": "Error occurred during download.",
+                "msg_server": "Server Connection Error!"
             },
             ku: {
-                "nav-home": "سەرەکی",
-                "input-ph": "لینکی ڤیدیۆکە لێرە دابنێ...",
-                "btn-paste": "پەیست",
-                "opt-best": "باشترین کوالێتی (ئۆتۆ)",
-                "opt-mp3": "تەنها دەنگ (MP3)",
-                "btn-dl": "داونلۆدکردن",
-                "msg-empty": "تکایە لینکێک دابنێ!",
-                "msg-fetching": "هێنانی زانیاری ڤیدیۆ...",
-                "msg-dl": "داگرتن...",
-                "msg-done": "تەواوبوو!",
-                "msg-err": "هەڵەیەک ڕوویدا لە کاتی داگرتن.",
-                "msg-server": "کێشەی پەیوەندیکردن بە سێرڤەر!"
+                "nav_home": "سەرەکی",
+                "nav_youtube": "یووتیووب",
+                "nav_facebook": "فەیسبووک",
+                "nav_instagram": "ئینستاگرام",
+                "nav_tiktok": "تیکتۆک",
+                "ig_title": "داگرتنی ڤیدیۆی ئینستاگرام",
+                "input_ph": "لینکی ڤیدیۆکە لێرە دابنێ...",
+                "btn_paste": "پەیست",
+                "opt_best": "باشترین کوالێتی (ئۆتۆ)",
+                "opt_mp3": "تەنها دەنگ (MP3)",
+                "btn_dl": "داونلۆدکردن",
+                "msg_empty": "تکایە لینکێک دابنێ!",
+                "msg_fetching": "هێنانی زانیاری ڤیدیۆ...",
+                "msg_dl": "داگرتن...",
+                "msg_done": "تەواوبوو!",
+                "msg_err": "هەڵەیەک ڕوویدا لە کاتی داگرتن.",
+                "msg_server": "کێشەی پەیوەندیکردن بە سێرڤەر!"
             },
             ar: {
-                "nav-home": "الرئيسية",
-                "input-ph": "ألصق رابط الفيديو هنا...",
-                "btn-paste": "لصق",
-                "opt-best": "أفضل جودة (تلقائي)",
-                "opt-mp3": "صوت فقط (MP3)",
-                "btn-dl": "تحميل",
-                "msg-empty": "الرجاء إدخال الرابط!",
-                "msg-fetching": "جلب معلومات الفيديو...",
-                "msg-dl": "جاري التحميل...",
-                "msg-done": "اكتمل!",
-                "msg-err": "حدث خطأ أثناء التحميل.",
-                "msg-server": "خطأ في الاتصال بالسيرفر!"
+                "nav_home": "الرئيسية",
+                "nav_youtube": "يوتيوب",
+                "nav_facebook": "فيسبوك",
+                "nav_instagram": "إنستغرام",
+                "nav_tiktok": "تيك توك",
+                "ig_title": "تحميل فيديوهات إنستغرام",
+                "input_ph": "ألصق رابط الفيديو هنا...",
+                "btn_paste": "لصق",
+                "opt_best": "أفضل جودة (تلقائي)",
+                "opt_mp3": "صوت فقط (MP3)",
+                "btn_dl": "تحميل",
+                "msg_empty": "الرجاء إدخال الرابط!",
+                "msg_fetching": "جلب معلومات الفيديو...",
+                "msg_dl": "جاري التحميل...",
+                "msg_done": "اكتمل!",
+                "msg_err": "حدث خطأ أثناء التحميل.",
+                "msg_server": "خطأ في الاتصال بالسيرفر!"
             }
         };
 
@@ -271,18 +283,22 @@
 
         function changeLanguage(lang) {
             currentLang = lang;
+            localStorage.setItem('app_lang', lang);
             document.documentElement.lang = lang;
             document.documentElement.dir = (lang === 'en') ? 'ltr' : 'rtl';
             
-            document.querySelectorAll('[data-key]').forEach(elem => {
-                const key = elem.getAttribute('data-key');
-                if (translations[lang][key]) elem.innerText = translations[lang][key];
+            document.querySelectorAll('[data-i18n]').forEach(elem => {
+                const key = elem.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) elem.innerText = translations[lang][key];
             });
 
-            document.querySelectorAll('[data-key-ph]').forEach(elem => {
-                const key = elem.getAttribute('data-key-ph');
-                if (translations[lang][key]) elem.placeholder = translations[lang][key];
+            document.querySelectorAll('[data-i18n-ph]').forEach(elem => {
+                const key = elem.getAttribute('data-i18n-ph');
+                if (translations[lang] && translations[lang][key]) elem.placeholder = translations[lang][key];
             });
+
+            const selectElem = document.getElementById('language-select');
+            if (selectElem) selectElem.value = lang;
         }
 
         async function pasteFromClipboard() {
@@ -295,7 +311,6 @@
                     throw new Error("Clipboard API not supported");
                 }
             } catch (err) {
-                // ئەگەر فایرفۆکس ڕێگەی نەدا، فوکەس دەخاتە سەر ئینپوتەکە بۆ ئەوەی بێ کێشە Ctrl+V بکەیت
                 const input = document.getElementById('videoUrl');
                 input.focus();
                 input.select();
@@ -314,6 +329,7 @@
 
         async function fetchMetadata(url) {
             const previewCard = document.getElementById('previewCard');
+            const qualitySelect = document.getElementById('qualitySelect');
             try {
                 const response = await fetch('/get-info', {
                     method: 'POST',
@@ -326,6 +342,18 @@
                     document.getElementById('prevImg').src = data.thumbnail;
                     document.getElementById('prevTitle').innerText = data.title;
                     document.getElementById('prevMeta').innerText = `Duration: ${data.duration} | By: ${data.uploader}`;
+                    
+                    qualitySelect.innerHTML = `<option value="best">${translations[currentLang]["opt_best"]}</option>`;
+                    if (data.qualities && data.qualities.length > 0) {
+                        data.qualities.forEach(q => {
+                            const opt = document.createElement('option');
+                            opt.value = q.format_id;
+                            opt.innerText = q.label;
+                            qualitySelect.appendChild(opt);
+                        });
+                    }
+                    qualitySelect.innerHTML += `<option value="mp3">${translations[currentLang]["opt_mp3"]}</option>`;
+
                     previewCard.style.display = 'block';
                 }
             } catch (e) {
@@ -339,11 +367,11 @@
             const progressBarContainer = document.getElementById('progressBarContainer');
             const progressBar = document.getElementById('progressBar');
 
-            if (!url) { alert(translations[currentLang]["msg-empty"]); return; }
+            if (!url) { alert(translations[currentLang]["msg_empty"]); return; }
 
             progressBarContainer.style.display = 'block';
             progressBar.style.width = '40%';
-            progressBar.innerText = translations[currentLang]["msg-dl"];
+            progressBar.innerText = translations[currentLang]["msg_dl"];
 
             try {
                 const response = await fetch('/download', {
@@ -355,7 +383,7 @@
                 if (response.ok) {
                     const blob = await response.blob();
                     progressBar.style.width = '100%';
-                    progressBar.innerText = translations[currentLang]["msg-done"];
+                    progressBar.innerText = translations[currentLang]["msg_done"];
 
                     const downloadUrl = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -365,14 +393,20 @@
                     a.click();
                     a.remove();
                 } else {
-                    alert(translations[currentLang]["msg-err"]);
+                    alert(translations[currentLang]["msg_err"]);
                     progressBarContainer.style.display = 'none';
                 }
             } catch (error) {
-                alert(translations[currentLang]["msg-server"]);
+                alert(translations[currentLang]["msg_server"]);
                 progressBarContainer.style.display = 'none';
             }
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('app_lang') || 'en';
+            changeLanguage(savedLang);
+        });
     </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

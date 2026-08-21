@@ -1,6 +1,7 @@
 import os
 import time
 import glob
+import re
 from flask import Flask, render_template, request, send_file, jsonify
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -8,7 +9,6 @@ import yt_dlp
 
 app = Flask(__name__)
 
-# 1. Rate Limiter (سنووردارکردنی داواکارییەکان بۆ ڕێگیری لە فۆڕمسپام)
 limiter = Limiter(
     get_remote_address,
     app=app,
@@ -20,16 +20,18 @@ DOWNLOAD_FOLDER = 'downloads'
 if not os.path.exists(DOWNLOAD_FOLDER):
     os.makedirs(DOWNLOAD_FOLDER)
 
-# 2. پاککردنەوەی خۆکارانەی فایلە کۆنەکان (زیاتر لە ١٠ خولەک)
 def cleanup_old_files():
     now = time.time()
     for filepath in glob.glob(os.path.join(DOWNLOAD_FOLDER, '*')):
         if os.path.isfile(filepath):
-            if now - os.path.getmtime(filepath) > 600:  # 600 چرکە = 10 خولەک
+            if now - os.path.getmtime(filepath) > 600:
                 try:
                     os.remove(filepath)
                 except Exception as e:
                     print(f"Error deleting file {filepath}: {e}")
+
+def sanitize_filename(title):
+    return re.sub(r'[\\/*?:"<>|]', "", title)
 
 @app.route('/')
 def index():
@@ -51,15 +53,14 @@ def instagram():
 def tiktok():
     return render_template('tiktok.html')
 
-# 3. هێنانی زانیاری ڤیدیۆ پێش داگرتن (Info / Preview)
 @app.route('/get-info', methods=['POST'])
-@limiter.limit("15 per minute")
+@limiter.limit("20 per minute")
 def get_video_info():
     data = request.json
     url = data.get('url')
 
     if not url:
-        return jsonify({'error': 'لینکەکە بەتاڵە'}), 400
+        return jsonify({'error': 'URL is required'}), 400
 
     ydl_opts = {
         'quiet': True,
@@ -69,29 +70,44 @@ def get_video_info():
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
+            
+            # دەرهێنانی کوالێتییە بەردەستەکان (Dynamic Quality Options)
+            formats_available = []
+            if 'formats' in info:
+                seen_heights = set()
+                for fmt in info['formats']:
+                    height = fmt.get('height')
+                    if height and height not in seen_heights and height >= 240:
+                        seen_heights.add(height)
+                        formats_available.append({
+                            'format_id': f"{height}p",
+                            'label': f"{height}p"
+                        })
+                # ڕێکخستن لە بەرزترینەوە بۆ نزمترین
+                formats_available.sort(key=lambda x: int(x['label'].replace('p', '')), reverse=True)
+
             return jsonify({
                 'title': info.get('title', 'Video'),
                 'thumbnail': info.get('thumbnail', ''),
-                'duration': info.get('duration_string', ''),
-                'uploader': info.get('uploader', 'Unknown')
+                'duration': info.get('duration_string', 'N/A'),
+                'uploader': info.get('uploader', info.get('extractor_key', 'Unknown')),
+                'qualities': formats_available
             })
     except Exception as e:
-        return jsonify({'error': 'نەتوانرا زانیاری ڤیدیۆکە بهێنرێت. تکایە لە دروستی لینکەکە دڵنیا ببنەوە.'}), 400
+        return jsonify({'error': 'Failed to fetch metadata. Invalid URL or private video.'}), 400
 
-# 4. داگرتنی ڤیدیۆ/دەنگ بەپێی کوالێتی
 @app.route('/download', methods=['POST'])
 @limiter.limit("10 per minute")
 def download_video():
-    cleanup_old_files()  # ئەنجامدانی پاککردنەوە لە کاتی هەر داواکارییەکی نوێدا
+    cleanup_old_files()
     
     data = request.json
     url = data.get('url')
-    format_type = data.get('format', 'best')  # best, 1080p, 720p, 480p, mp3
+    format_type = data.get('format', 'best')
 
     if not url:
-        return jsonify({'error': 'لینکەکە بەتاڵە'}), 400
+        return jsonify({'error': 'URL is required'}), 400
 
-    # ڕێکخستنی شێوازی داگرتن بۆ گونجان لەگەڵ PythonAnywhere (بێ پێویستی بە FFmpeg)
     if format_type == 'mp3':
         format_spec = 'bestaudio/best'
         postprocessors = [{
@@ -99,14 +115,9 @@ def download_video():
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }]
-    elif format_type == '1080p':
-        format_spec = 'best[height<=1080]/best'
-        postprocessors = []
-    elif format_type == '720p':
-        format_spec = 'best[height<=720]/best'
-        postprocessors = []
-    elif format_type == '480p':
-        format_spec = 'best[height<=480]/best'
+    elif format_type.endswith('p'):
+        height = format_type.replace('p', '')
+        format_spec = f'best[height<={height}]/best'
         postprocessors = []
     else:
         format_spec = 'best'
@@ -125,15 +136,18 @@ def download_video():
             info = ydl.extract_info(url, download=True)
             filename = ydl.prepare_filename(info)
             
-            # ئەگەر جۆری mp3 هەڵبژێردرابوو، پاشگرەکە بگۆڕە
             if format_type == 'mp3':
                 base, _ = os.path.splitext(filename)
                 filename = base + '.mp3'
 
-        return send_file(filename, as_attachment=True)
+            safe_title = sanitize_filename(info.get('title', 'video'))
+            ext = 'mp3' if format_type == 'mp3' else 'mp4'
+            download_name = f"{safe_title}.{ext}"
+
+        return send_file(filename, as_attachment=True, download_name=download_name)
     except Exception as e:
-        print(f"Error: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        print(f"Download Error: {str(e)}")
+        return jsonify({'error': 'Download failed.'}), 500
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000, debug=True)

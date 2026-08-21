@@ -1,0 +1,17 @@
+{
+  "nav_home": "Home",
+  "nav_youtube": "YouTube",
+  "nav_facebook": "Facebook",
+  "nav_instagram": "Instagram",
+  "nav_tiktok": "TikTok",
+  "title": "TikTok Video Downloader",
+  "paste_placeholder": "Paste video link here...",
+  "paste_button": "Paste",
+  "download_button": "Download",
+  "quality_auto": "Best Quality (Auto)",
+  "quality_1080p": "1080p Full HD",
+  "quality_720p": "720p HD",
+  "quality_480p": "480p SD",
+  "quality_mp3": "Audio Only (MP3)",
+  "error_occurred": "An error occurred during download."
+}

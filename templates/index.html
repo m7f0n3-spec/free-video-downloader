@@ -109,61 +109,83 @@
 
     <header>
         <nav>
-            <a href="/index" class="active" data-key="nav-home">Home</a>
-            <a href="/youtube">YouTube</a>
-            <a href="/facebook">Facebook</a>
-            <a href="/instagram">Instagram</a>
-            <a href="/tiktok">TikTok</a>
+            <a href="/" class="active" data-i18n="nav_home">Home</a>
+            <a href="/youtube" data-i18n="nav_youtube">YouTube</a>
+            <a href="/facebook" data-i18n="nav_facebook">Facebook</a>
+            <a href="/instagram" data-i18n="nav_instagram">Instagram</a>
+            <a href="/tiktok" data-i18n="nav_tiktok">TikTok</a>
         </nav>
-        <select class="lang-select" onchange="changeLanguage(this.value)">
-            <option value="en" selected>English</option>
+        <select id="language-select" class="lang-select" onchange="changeLanguage(this.value)">
+            <option value="en">English</option>
             <option value="ku">کوردی</option>
             <option value="ar">العربية</option>
         </select>
     </header>
 
     <div class="hero">
-        <h1 data-key="hero-title">Download High Quality Videos</h1>
-        <p data-key="hero-desc">Select your preferred platform to start downloading videos effortlessly.</p>
+        <h1 data-i18n="hero_title">Download High Quality Videos</h1>
+        <p data-i18n="hero_desc">Select your preferred platform to start downloading videos effortlessly.</p>
 
         <div class="cards-grid">
-            <a href="/youtube" class="card"><span>YouTube</span></a>
-            <a href="/facebook" class="card"><span>Facebook</span></a>
-            <a href="/instagram" class="card"><span>Instagram</span></a>
-            <a href="/tiktok" class="card"><span>TikTok</span></a>
+            <a href="/youtube" class="card"><span data-i18n="nav_youtube">YouTube</span></a>
+            <a href="/facebook" class="card"><span data-i18n="nav_facebook">Facebook</span></a>
+            <a href="/instagram" class="card"><span data-i18n="nav_instagram">Instagram</span></a>
+            <a href="/tiktok" class="card"><span data-i18n="nav_tiktok">TikTok</span></a>
         </div>
     </div>
 
     <script>
         const translations = {
             en: {
-                "nav-home": "Home",
-                "hero-title": "Download High Quality Videos",
-                "hero-desc": "Select your preferred platform to start downloading videos effortlessly."
+                "nav_home": "Home",
+                "nav_youtube": "YouTube",
+                "nav_facebook": "Facebook",
+                "nav_instagram": "Instagram",
+                "nav_tiktok": "TikTok",
+                "hero_title": "Download High Quality Videos",
+                "hero_desc": "Select your preferred platform to start downloading videos effortlessly."
             },
             ku: {
-                "nav-home": "سەرەکی",
-                "hero-title": "داگرتنی ڤیدیۆ بە کوالێتی بەرز",
-                "hero-desc": "پلاتفۆڕمی دڵخوازت هەڵبژێرە بۆ داگرتنی ڤیدیۆکان بە ئاسانی."
+                "nav_home": "سەرەکی",
+                "nav_youtube": "یووتیووب",
+                "nav_facebook": "فەیسبووک",
+                "nav_instagram": "ئینستاگرام",
+                "nav_tiktok": "تیکتۆک",
+                "hero_title": "داگرتنی ڤیدیۆ بە کوالێتی بەرز",
+                "hero_desc": "پلاتفۆڕمی دڵخوازت هەڵبژێرە بۆ داگرتنی ڤیدیۆکان بە ئاسانی."
             },
             ar: {
-                "nav-home": "الرئيسية",
-                "hero-title": "تحميل فيديوهات بجودة عالية",
-                "hero-desc": "اختر المنصة المفضلة لديك للبدء في تحميل الفيديوهات بكل سهولة."
+                "nav_home": "الرئيسية",
+                "nav_youtube": "يوتيوب",
+                "nav_facebook": "فيسبوك",
+                "nav_instagram": "إنستغرام",
+                "nav_tiktok": "تيك توك",
+                "hero_title": "تحميل فيديوهات بجودة عالية",
+                "hero_desc": "اختر المنصة المفضلة لديك للبدء في تحميل الفيديوهات بكل سهولة."
             }
         };
 
         function changeLanguage(lang) {
+            localStorage.setItem('app_lang', lang);
             document.documentElement.lang = lang;
             document.documentElement.dir = (lang === 'en') ? 'ltr' : 'rtl';
             
-            document.querySelectorAll('[data-key]').forEach(elem => {
-                const key = elem.getAttribute('data-key');
-                if (translations[lang][key]) {
+            document.querySelectorAll('[data-i18n]').forEach(elem => {
+                const key = elem.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
                     elem.innerText = translations[lang][key];
                 }
             });
+            
+            const selectElem = document.getElementById('language-select');
+            if (selectElem) selectElem.value = lang;
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('app_lang') || 'en';
+            changeLanguage(savedLang);
+        });
     </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

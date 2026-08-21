@@ -1,0 +1,17 @@
+{
+  "nav_home": "الرئيسية",
+  "nav_youtube": "يوتيوب",
+  "nav_facebook": "فيسبوك",
+  "nav_instagram": "إنستغرام",
+  "nav_tiktok": "تيك توك",
+  "title": "تحميل فيديوهات تيك توك",
+  "paste_placeholder": "ألصق رابط الفيديو هنا...",
+  "paste_button": "لصق",
+  "download_button": "تحميل",
+  "quality_auto": "أفضل جودة (تلقائي)",
+  "quality_1080p": "1080p دقة عالية جداً",
+  "quality_720p": "720p دقة عالية",
+  "quality_480p": "480p دقة عادية",
+  "quality_mp3": "صوت فقط (MP3)",
+  "error_occurred": "حدث خطأ أثناء التحميل."
+}
