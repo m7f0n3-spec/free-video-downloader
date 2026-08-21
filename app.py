@@ -91,7 +91,7 @@ def download_video():
     if not url:
         return jsonify({'error': 'لینکەکە بەتاڵە'}), 400
 
-    # ڕێکخستنی شێوازی داگرتن
+    # ڕێکخستنی شێوازی داگرتن بۆ گونجان لەگەڵ PythonAnywhere (بێ پێویستی بە FFmpeg)
     if format_type == 'mp3':
         format_spec = 'bestaudio/best'
         postprocessors = [{
@@ -100,16 +100,16 @@ def download_video():
             'preferredquality': '192',
         }]
     elif format_type == '1080p':
-        format_spec = 'bestvideo[height<=1080]+bestaudio/best[height<=1080]/best'
+        format_spec = 'best[height<=1080]/best'
         postprocessors = []
     elif format_type == '720p':
-        format_spec = 'bestvideo[height<=720]+bestaudio/best[height<=720]/best'
+        format_spec = 'best[height<=720]/best'
         postprocessors = []
     elif format_type == '480p':
-        format_spec = 'bestvideo[height<=480]+bestaudio/best[height<=480]/best'
+        format_spec = 'best[height<=480]/best'
         postprocessors = []
     else:
-        format_spec = 'bestvideo+bestaudio/best'
+        format_spec = 'best'
         postprocessors = []
 
     ydl_opts = {
