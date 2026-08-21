@@ -2,3 +2,4 @@ Flask
 Flask-Limiter
 yt-dlp
 gunicorn
+boto3
