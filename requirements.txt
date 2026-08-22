@@ -3,3 +3,4 @@ Flask-Limiter
 yt-dlp
 gunicorn
 boto3
+yt-dlp>=2024.08.01
