@@ -69,6 +69,13 @@ def get_video_info():
         'no_warnings': True,
         'nocheckcertificate': True,
         'geo_bypass': True,
+        'cookiefile': 'cookies.txt',
+        'proxy': 'http://user:pass@proxy_ip:port',
+        'extractor_args': {
+            'youtube': {
+            '   player_client': ['android', 'ios']
+            }
+        }
     }
 
     if 'tiktok.com' in url:
