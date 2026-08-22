@@ -158,6 +158,7 @@ def download_video():
 
     postprocessors = []
 
+    # گۆڕانکاری لە بەشی format_spec بۆ داونلۆدکردنی بەرزترین کوالێتیی بەردەست بەبێ دەستنیشانکردنی زۆرەملێیانەی mp4
     if format_type == 'mp3':
         format_spec = 'bestaudio/best'
         postprocessors.append({
@@ -167,9 +168,9 @@ def download_video():
         })
     elif format_type.endswith('p'):
         height = format_type.replace('p', '')
-        format_spec = f'best[height<={height}][ext=mp4]/bestvideo[height<={height}]+bestaudio/best'
+        format_spec = f'bestvideo[height<={height}]+bestaudio/best[height<={height}]/best[height<={height}]/best'
     else:
-        format_spec = 'best[ext=mp4]/best'
+        format_spec = 'bestvideo+bestaudio/best'
 
     if start_time or end_time:
         postprocessors.append({
