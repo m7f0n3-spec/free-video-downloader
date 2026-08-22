@@ -68,6 +68,11 @@ def get_video_info():
     ydl_opts = {
         'quiet': True,
         'no_warnings': True,
+        'nocheckcertificate': True,
+        'geo_bypass': True,
+        'headers': {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        }
     }
 
     try:
@@ -116,19 +121,23 @@ def download_video():
         }]
     elif format_type.endswith('p'):
         height = format_type.replace('p', '')
-        format_spec = f'best[height<={height}]/best'
+        format_spec = f'best[height<={height}][ext=mp4]/bestvideo[height<={height}]+bestaudio/best'
         postprocessors = []
     else:
-        format_spec = 'best'
+        format_spec = 'best[ext=mp4]/best'
         postprocessors = []
 
-    # داگرتنی فایلەکە لە /tmp ڕاستەوخۆ لەسەر سێرڤەر
     ydl_opts = {
         'outtmpl': '/tmp/%(title)s_%(id)s.%(ext)s',
         'format': format_spec,
         'noplaylist': True,
         'quiet': True,
-        'postprocessors': postprocessors
+        'postprocessors': postprocessors,
+        'nocheckcertificate': True,
+        'geo_bypass': True,
+        'headers': {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        }
     }
 
     try:
