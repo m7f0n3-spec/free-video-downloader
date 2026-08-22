@@ -1,10 +1,12 @@
 import os
 import re
+import yt_dlp
 import boto3
+from botocore.config import Config
 from flask import Flask, render_template, request, jsonify
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-import yt_dlp
+
 
 app = Flask(__name__)
 
@@ -24,9 +26,11 @@ R2_BUCKET_NAME = os.getenv('R2_BUCKET_NAME', 'my-media-downloader')
 # دروستکردنی پەیوەندی بە S3 Clientی R2
 s3_client = boto3.client(
     's3',
-    endpoint_url=f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com" if R2_ACCOUNT_ID else None,
+    endpoint_url=f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com",
     aws_access_key_id=R2_ACCESS_KEY_ID,
-    aws_secret_access_key=R2_SECRET_ACCESS_KEY
+    aws_secret_access_key=R2_SECRET_ACCESS_KEY,
+    config=Config(signature_version='s3v4'),
+    region_name='auto'  # Cloudflare R2 پێویستی بەمەیە
 )
 
 def sanitize_filename(title):
