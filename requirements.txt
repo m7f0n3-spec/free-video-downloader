@@ -4,3 +4,4 @@ yt-dlp>=2024.08.01
 gunicorn
 boto3
 botocore
+bgutil-ytdlp-pot-provider
