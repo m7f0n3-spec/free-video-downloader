@@ -3,7 +3,7 @@ import re
 import yt_dlp
 import boto3
 from botocore.config import Config
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
@@ -19,39 +19,43 @@ limiter = Limiter(
 R2_ACCOUNT_ID = os.getenv('R2_ACCOUNT_ID')
 R2_ACCESS_KEY_ID = os.getenv('R2_ACCESS_KEY_ID')
 R2_SECRET_ACCESS_KEY = os.getenv('R2_SECRET_ACCESS_KEY')
-R2_BUCKET_NAME = os.getenv('R2_BUCKET_NAME', 'my-media-downloader')
 
-# پروکسی و PO Token ئەگەر هەبن
-PROXY_URL = os.getenv('PROXY_URL')  # بۆ نموونە: http://user:pass@ip:port
-PO_TOKEN = os.getenv('PO_TOKEN')    # بۆ نموونە: web+YOUR_PO_TOKEN_HERE
+# پاککردنەوەی ناوی Bucket لە هەر هێمایەکی ناپێویست یان سلاش
+R2_BUCKET_NAME = os.getenv('R2_BUCKET_NAME', 'my-media-downloader').strip().strip('/')
 
-# ناو نیشانی Cloudflare Worker ەکەت
-CF_WORKER_PROXY = "https://yt-proxy.m7f0n3.workers.dev"
+PROXY_URL = os.getenv('PROXY_URL')
+PO_TOKEN = os.getenv('PO_TOKEN')
 
-s3_client = boto3.client(
-    's3',
-    endpoint_url=f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com",
-    aws_access_key_id=R2_ACCESS_KEY_ID,
-    aws_secret_access_key=R2_SECRET_ACCESS_KEY,
-    config=Config(signature_version='s3v4'),
-    region_name='auto'
-)
+DOWNLOAD_DIR = os.path.join(os.path.dirname(__file__), 'downloads')
+if not os.path.exists(DOWNLOAD_DIR):
+    os.makedirs(DOWNLOAD_DIR)
+
+s3_client = None
+if R2_ACCOUNT_ID and R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY:
+    s3_client = boto3.client(
+        's3',
+        endpoint_url=f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com",
+        aws_access_key_id=R2_ACCESS_KEY_ID,
+        aws_secret_access_key=R2_SECRET_ACCESS_KEY,
+        config=Config(signature_version='s3v4'),
+        region_name='auto'
+    )
 
 def sanitize_filename(title):
-    return re.sub(r'[\\/*?:"<>|]', "", title)
+    # پاککردنەوەی هێما تایبەتەکان و کارەکتەرە کێشەسازەکان بۆ S3
+    clean_title = re.sub(r'[^\w\s-]', '', title)
+    clean_title = re.sub(r'\s+', '_', clean_title).strip('_')
+    return clean_title if clean_title else 'video'
 
-# دڵنیا بوونەوە لە ڕێڕەوی دروستی cookies.txt
 COOKIE_PATH = os.path.join(os.path.dirname(__file__), 'cookies.txt')
 
-def get_base_ydl_opts(url=""):
-    """ڕێکخستنە نوێکراوەکان بۆ تێپەڕاندنی بلۆکی یوتیوب لە ڕێگەی Cloudflare Worker"""
+def get_base_ydl_opts():
     yt_client_config = ['tv', 'android', 'ios', 'web']
     
     yt_extractor_args = {
         'player_client': yt_client_config
     }
     
-    # ئەگەر PO Token هەبوو، زیای بکە
     if PO_TOKEN:
         yt_extractor_args['po_token'] = [PO_TOKEN]
 
@@ -68,17 +72,10 @@ def get_base_ydl_opts(url=""):
             'youtube': yt_extractor_args
         }
     }
-
-    # ئەگەر داواکارییەکە بۆ یوتیوب بێت، بڕوات لە ڕێگەی Worker ەکەوە
-    if 'youtube.com' in url or 'youtu.be' in url:
-        opts['source_address'] = '0.0.0.0'
-        opts['force_generic_extractor'] = False
     
-    # بەکارهێنانی فایلی cookies.txt ئەگەر لە فۆڵدەرەکەدا هەبێت
     if os.path.exists(COOKIE_PATH):
         opts['cookiefile'] = COOKIE_PATH
         
-    # بەکارهێنانی پروکسی ئەگەر دیاریکرا بێت
     if PROXY_URL:
         opts['proxy'] = PROXY_URL
     
@@ -104,6 +101,10 @@ def instagram():
 def tiktok():
     return render_template('tiktok.html')
 
+@app.route('/downloads/<path:filename>')
+def serve_downloaded_file(filename):
+    return send_from_directory(DOWNLOAD_DIR, filename, as_attachment=True)
+
 @app.route('/get-info', methods=['POST'])
 @limiter.limit("20 per minute")
 def get_video_info():
@@ -113,19 +114,11 @@ def get_video_info():
     if not url:
         return jsonify({'error': 'URL is required'}), 400
 
-    # ئامادەکردنی لینکەکە بۆ تێپەڕبوون بە Cloudflare Worker
-    target_url = url
-    if 'youtube.com' in url or 'youtu.be' in url:
-        target_url = f"{CF_WORKER_PROXY}/?url={url}"
-
-    ydl_opts = get_base_ydl_opts(url)
-
-    if 'tiktok.com' in url:
-        ydl_opts['extractor_args'] = {'tiktok': {'app_version': 'v2'}}
+    ydl_opts = get_base_ydl_opts()
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(target_url, download=False)
+            info = ydl.extract_info(url, download=False)
             
             formats_available = []
             if 'formats' in info:
@@ -163,10 +156,6 @@ def download_video():
     if not url:
         return jsonify({'error': 'URL is required'}), 400
 
-    target_url = url
-    if 'youtube.com' in url or 'youtu.be' in url:
-        target_url = f"{CF_WORKER_PROXY}/?url={url}"
-
     postprocessors = []
 
     if format_type == 'mp3':
@@ -188,17 +177,13 @@ def download_video():
             'preferedformat': 'mp4'
         })
 
-    ydl_opts = get_base_ydl_opts(url)
+    ydl_opts = get_base_ydl_opts()
     ydl_opts.update({
-        'outtmpl': '/tmp/%(title)s_%(id)s.%(ext)s',
+        'outtmpl': os.path.join(DOWNLOAD_DIR, '%(title)s_%(id)s.%(ext)s'),
         'format': format_spec,
         'noplaylist': True,
         'postprocessors': postprocessors,
     })
-
-    if 'tiktok.com' in url:
-        ydl_opts['format'] = 'bestvideo+bestaudio/best'
-        ydl_opts['extractor_args'] = {'tiktok': {'app_version': 'v2'}}
 
     if start_time or end_time:
         def set_download_range(info_dict, ydl):
@@ -207,7 +192,7 @@ def download_video():
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(target_url, download=True)
+            info = ydl.extract_info(url, download=True)
             filename = ydl.prepare_filename(info)
             
             if format_type == 'mp3':
@@ -215,29 +200,38 @@ def download_video():
                 filename = base + '.mp3'
 
             safe_title = sanitize_filename(info.get('title', 'video'))
+            video_id = info.get('id', 'media')
             ext = 'mp3' if format_type == 'mp3' else 'mp4'
-            file_key = f"{safe_title}.{ext}"
+            
+            # ناوی فایل لە ناو R2 دەبێت پاک بێت
+            file_key = f"{safe_title}_{video_id}.{ext}"
 
-            s3_client.upload_file(filename, R2_BUCKET_NAME, file_key)
+            if s3_client:
+                s3_client.upload_file(
+                    Filename=filename,
+                    Bucket=R2_BUCKET_NAME,
+                    Key=file_key
+                )
 
-            if os.path.exists(filename):
-                os.remove(filename)
+                if os.path.exists(filename):
+                    os.remove(filename)
 
-            download_url = s3_client.generate_presigned_url(
-                'get_object',
-                Params={
-                    'Bucket': R2_BUCKET_NAME,
-                    'Key': file_key,
-                    'ResponseContentDisposition': f'attachment; filename="{file_key}"'
-                },
-                ExpiresIn=3600
-            )
-
-            return jsonify({'download_url': download_url})
+                download_url = s3_client.generate_presigned_url(
+                    'get_object',
+                    Params={
+                        'Bucket': R2_BUCKET_NAME,
+                        'Key': file_key,
+                        'ResponseContentDisposition': f'attachment; filename="{file_key}"'
+                    },
+                    ExpiresIn=3600
+                )
+                return jsonify({'download_url': download_url})
+            else:
+                return jsonify({'download_url': f"/downloads/{os.path.basename(filename)}"})
 
     except Exception as e:
-        print(f"Download Error: {str(e)}")
-        return jsonify({'error': 'Download failed.'}), 500
+        print(f"Download Error Trace: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000, debug=True)
