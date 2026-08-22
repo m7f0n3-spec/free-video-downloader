@@ -17,13 +17,11 @@ limiter = Limiter(
     storage_uri="memory://"
 )
 
-# ڕێکخستنی زانیارییەکانی Cloudflare R2
 R2_ACCOUNT_ID = os.getenv('R2_ACCOUNT_ID')
 R2_ACCESS_KEY_ID = os.getenv('R2_ACCESS_KEY_ID')
 R2_SECRET_ACCESS_KEY = os.getenv('R2_SECRET_ACCESS_KEY')
 R2_BUCKET_NAME = os.getenv('R2_BUCKET_NAME', 'my-media-downloader')
 
-# دروستکردنی پەیوەندی بە S3 Clientی R2
 s3_client = boto3.client(
     's3',
     endpoint_url=f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com",
@@ -74,8 +72,16 @@ def get_video_info():
         'geo_bypass': True,
     }
 
-    # تەنها بۆ یوتیوب فایلی cookies بەکاربێنە ئەگەر فۆڵدەرەکە لە سەر سێرڤەر هەبوو
     if 'youtube.com' in url or 'youtu.be' in url:
+        ydl_opts['extractor_args'] = {
+            'youtube': {
+                'player_client': ['ios', 'tv_embedded'],
+                'skip': ['webpage', 'configs']
+            }
+        }
+        ydl_opts['headers'] = {
+            'User-Agent': 'com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X; en_US)'
+        }
         if os.path.exists(COOKIE_PATH):
             ydl_opts['cookiefile'] = COOKIE_PATH
 
@@ -131,7 +137,6 @@ def download_video():
         format_spec = 'best[ext=mp4]/best'
         postprocessors = []
 
-    # ڕێکخستنی تایبەت بە یوتیوب بۆ تێپەڕاندنی IP Block
     ydl_opts = {
         'outtmpl': '/tmp/%(title)s_%(id)s.%(ext)s',
         'format': format_spec,
@@ -140,19 +145,18 @@ def download_video():
         'postprocessors': postprocessors,
         'nocheckcertificate': True,
         'geo_bypass': True,
-        'extractor_args': {
+    }
+
+    if 'youtube.com' in url or 'youtu.be' in url:
+        ydl_opts['extractor_args'] = {
             'youtube': {
                 'player_client': ['ios', 'tv_embedded'],
                 'skip': ['webpage', 'configs']
             }
-        },
-        'headers': {
-            'User-Agent': 'com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X; en_US)',
         }
-    }
-
-    # تەنها بۆ یوتیوب فایلی cookies بەکاربێنە
-    if 'youtube.com' in url or 'youtu.be' in url:
+        ydl_opts['headers'] = {
+            'User-Agent': 'com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X; en_US)'
+        }
         if os.path.exists(COOKIE_PATH):
             ydl_opts['cookiefile'] = COOKIE_PATH
 
@@ -169,14 +173,11 @@ def download_video():
             ext = 'mp3' if format_type == 'mp3' else 'mp4'
             file_key = f"{safe_title}.{ext}"
 
-            # ١. بەرزکردنەوەی فایلەکە بۆ Cloudflare R2
             s3_client.upload_file(filename, R2_BUCKET_NAME, file_key)
 
-            # ٢. سڕینەوەی فایلەکە لە Render بۆ هێشتنەوەی شوێنی بەتاڵ
             if os.path.exists(filename):
                 os.remove(filename)
 
-            # ٣. دروستکردنی لینکی داگرتنی کاتی (Presigned URL) بە شێوازی Force Download
             download_url = s3_client.generate_presigned_url(
                 'get_object',
                 Params={
