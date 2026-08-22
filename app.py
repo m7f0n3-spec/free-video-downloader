@@ -21,6 +21,10 @@ R2_ACCESS_KEY_ID = os.getenv('R2_ACCESS_KEY_ID')
 R2_SECRET_ACCESS_KEY = os.getenv('R2_SECRET_ACCESS_KEY')
 R2_BUCKET_NAME = os.getenv('R2_BUCKET_NAME', 'my-media-downloader')
 
+# پروکسی و PO Token ئەگەر هەبن
+PROXY_URL = os.getenv('PROXY_URL')  # بۆ نموونە: http://user:pass@ip:port
+PO_TOKEN = os.getenv('PO_TOKEN')    # بۆ نموونە: web+YOUR_PO_TOKEN_HERE
+
 # ناو نیشانی Cloudflare Worker ەکەت
 CF_WORKER_PROXY = "https://yt-proxy.m7f0n3.workers.dev"
 
@@ -36,29 +40,47 @@ s3_client = boto3.client(
 def sanitize_filename(title):
     return re.sub(r'[\\/*?:"<>|]', "", title)
 
+# دڵنیا بوونەوە لە ڕێڕەوی دروستی cookies.txt
 COOKIE_PATH = os.path.join(os.path.dirname(__file__), 'cookies.txt')
 
-def get_base_ydl_opts():
-    """ڕێکخستنەکان لەگەڵ بەکارهێنانی Cloudflare Worker وەک Proxy"""
+def get_base_ydl_opts(url=""):
+    """ڕێکخستنە نوێکراوەکان بۆ تێپەڕاندنی بلۆکی یوتیوب لە ڕێگەی Cloudflare Worker"""
+    yt_client_config = ['tv', 'android', 'ios', 'web']
+    
+    yt_extractor_args = {
+        'player_client': yt_client_config
+    }
+    
+    # ئەگەر PO Token هەبوو، زیای بکە
+    if PO_TOKEN:
+        yt_extractor_args['po_token'] = [PO_TOKEN]
+
     opts = {
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
         'geo_bypass': True,
-        'proxy': CF_WORKER_PROXY,  # ناردنی داواکارییەکان لە ڕێگەی Workerەکەتەوە
         'http_headers': {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
             'Accept-Language': 'en-US,en;q=0.9',
         },
         'extractor_args': {
-            'youtube': {
-                'player_client': ['tv', 'android', 'ios', 'web']
-            }
+            'youtube': yt_extractor_args
         }
     }
+
+    # ئەگەر داواکارییەکە بۆ یوتیوب بێت، بڕوات لە ڕێگەی Worker ەکەوە
+    if 'youtube.com' in url or 'youtu.be' in url:
+        opts['source_address'] = '0.0.0.0'
+        opts['force_generic_extractor'] = False
     
+    # بەکارهێنانی فایلی cookies.txt ئەگەر لە فۆڵدەرەکەدا هەبێت
     if os.path.exists(COOKIE_PATH):
         opts['cookiefile'] = COOKIE_PATH
+        
+    # بەکارهێنانی پروکسی ئەگەر دیاریکرا بێت
+    if PROXY_URL:
+        opts['proxy'] = PROXY_URL
     
     return opts
 
@@ -91,14 +113,19 @@ def get_video_info():
     if not url:
         return jsonify({'error': 'URL is required'}), 400
 
-    ydl_opts = get_base_ydl_opts()
+    # ئامادەکردنی لینکەکە بۆ تێپەڕبوون بە Cloudflare Worker
+    target_url = url
+    if 'youtube.com' in url or 'youtu.be' in url:
+        target_url = f"{CF_WORKER_PROXY}/?url={url}"
+
+    ydl_opts = get_base_ydl_opts(url)
 
     if 'tiktok.com' in url:
         ydl_opts['extractor_args'] = {'tiktok': {'app_version': 'v2'}}
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=False)
+            info = ydl.extract_info(target_url, download=False)
             
             formats_available = []
             if 'formats' in info:
@@ -136,6 +163,10 @@ def download_video():
     if not url:
         return jsonify({'error': 'URL is required'}), 400
 
+    target_url = url
+    if 'youtube.com' in url or 'youtu.be' in url:
+        target_url = f"{CF_WORKER_PROXY}/?url={url}"
+
     postprocessors = []
 
     if format_type == 'mp3':
@@ -157,7 +188,7 @@ def download_video():
             'preferedformat': 'mp4'
         })
 
-    ydl_opts = get_base_ydl_opts()
+    ydl_opts = get_base_ydl_opts(url)
     ydl_opts.update({
         'outtmpl': '/tmp/%(title)s_%(id)s.%(ext)s',
         'format': format_spec,
@@ -176,7 +207,7 @@ def download_video():
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=True)
+            info = ydl.extract_info(target_url, download=True)
             filename = ydl.prepare_filename(info)
             
             if format_type == 'mp3':
