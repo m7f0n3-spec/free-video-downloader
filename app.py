@@ -131,6 +131,7 @@ def download_video():
         format_spec = 'best[ext=mp4]/best'
         postprocessors = []
 
+    # ڕێکخستنی تایبەت بە یوتیوب بۆ تێپەڕاندنی IP Block
     ydl_opts = {
         'outtmpl': '/tmp/%(title)s_%(id)s.%(ext)s',
         'format': format_spec,
@@ -139,6 +140,15 @@ def download_video():
         'postprocessors': postprocessors,
         'nocheckcertificate': True,
         'geo_bypass': True,
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['ios', 'tv_embedded'],
+                'skip': ['webpage', 'configs']
+            }
+        },
+        'headers': {
+            'User-Agent': 'com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X; en_US)',
+        }
     }
 
     # تەنها بۆ یوتیوب فایلی cookies بەکاربێنە
