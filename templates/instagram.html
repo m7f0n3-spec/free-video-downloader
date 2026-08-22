@@ -441,8 +441,30 @@
             if (!url) { alert(translations[currentLang]["msg_empty"]); return; }
 
             progressBarContainer.style.display = 'block';
-            progressBar.style.width = '50%';
-            progressBar.innerText = translations[currentLang]["msg_dl"];
+            progressBar.style.width = '0%';
+            progressBar.innerText = '0%';
+
+            // دروستکردنی task_id تایبەت بۆ پێوانەی خێرایی
+            const taskId = 'task_' + Date.now();
+
+            // بەیەکبەستنی EventSource بۆ وەرگرتنی بەرەوپێشچوونی کاتی واقعی
+            const eventSource = new EventSource(`/progress/${taskId}`);
+            eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.percent !== undefined) {
+                    const pct = Math.round(data.percent);
+                    progressBar.style.width = pct + '%';
+                    
+                    if (data.status === 'uploading') {
+                        progressBar.innerText = 'Uploading to Cloud...';
+                    } else {
+                        progressBar.innerText = pct + '%';
+                    }
+                }
+                if (data.status === 'completed' || data.status === 'error') {
+                    eventSource.close();
+                }
+            };
 
             try {
                 const response = await fetch('/download', {
@@ -452,7 +474,8 @@
                         url: url, 
                         format: format,
                         start_time: startTime,
-                        end_time: endTime
+                        end_time: endTime,
+                        task_id: taskId
                     })
                 });
 
@@ -461,16 +484,18 @@
                 if (response.ok && data.download_url) {
                     progressBar.style.width = '100%';
                     progressBar.innerText = translations[currentLang]["msg_done"];
+                    eventSource.close();
 
-                    // ڕەوانەکردنی بەکارهێنەر بۆ لینکی R2 بۆ داگرتنی فایلەکە
                     window.location.href = data.download_url;
                 } else {
                     alert(data.error || translations[currentLang]["msg_err"]);
                     progressBarContainer.style.display = 'none';
+                    eventSource.close();
                 }
             } catch (error) {
                 alert(translations[currentLang]["msg_server"]);
                 progressBarContainer.style.display = 'none';
+                eventSource.close();
             }
         }
 
