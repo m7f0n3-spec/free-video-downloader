@@ -30,11 +30,13 @@ s3_client = boto3.client(
     aws_access_key_id=R2_ACCESS_KEY_ID,
     aws_secret_access_key=R2_SECRET_ACCESS_KEY,
     config=Config(signature_version='s3v4'),
-    region_name='auto'  # Cloudflare R2 پێویستی بەمەیە
+    region_name='auto'
 )
 
 def sanitize_filename(title):
     return re.sub(r'[\\/*?:"<>|]', "", title)
+
+COOKIE_PATH = '/etc/secrets/cookies.txt'
 
 @app.route('/')
 def index():
@@ -70,16 +72,10 @@ def get_video_info():
         'no_warnings': True,
         'nocheckcertificate': True,
         'geo_bypass': True,
-        'extractor_args': {
-            'youtube': {
-                'player_client': ['android', 'web'],
-                'skip': ['hls', 'dash']
-            }
-        },
-        'headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        }
     }
+
+    if os.path.exists(COOKIE_PATH):
+        ydl_opts['cookiefile'] = COOKIE_PATH
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -141,16 +137,10 @@ def download_video():
         'postprocessors': postprocessors,
         'nocheckcertificate': True,
         'geo_bypass': True,
-        'extractor_args': {
-            'youtube': {
-                'player_client': ['mweb', 'android', 'ios'],
-                'skip': ['hls', 'dash']
-            }
-        },
-        'headers': {
-            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
-        }
     }
+
+    if os.path.exists(COOKIE_PATH):
+        ydl_opts['cookiefile'] = COOKIE_PATH
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
