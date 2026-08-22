@@ -41,7 +41,7 @@
             z-index: 100;
         }
 
-        nav { display: flex; gap: 10px; }
+        nav { display: flex; gap: 10px; flex-wrap: wrap; }
         nav a {
             color: var(--text-muted);
             text-decoration: none;
@@ -67,6 +67,7 @@
             margin: auto;
             text-align: center;
             padding: 60px 20px;
+            width: 100%;
         }
         .hero h1 {
             font-size: 2.8rem;
@@ -102,6 +103,42 @@
             transform: translateY(-6px);
             border-color: var(--primary);
             box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.3);
+        }
+
+        /* بەشی گونجاندن لەگەڵ مۆبایل و تابلێت */
+        @media (max-width: 600px) {
+            header {
+                padding: 12px 4%;
+                flex-direction: column;
+                gap: 12px;
+            }
+            nav {
+                justify-content: center;
+                gap: 6px;
+            }
+            nav a {
+                padding: 6px 10px;
+                font-size: 0.85rem;
+            }
+            .hero {
+                padding: 30px 15px;
+            }
+            .hero h1 {
+                font-size: 1.8rem;
+                margin-bottom: 12px;
+            }
+            .hero p {
+                font-size: 0.95rem;
+                margin-bottom: 30px;
+            }
+            .cards-grid {
+                grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+                gap: 12px;
+            }
+            .card {
+                padding: 20px 10px;
+                font-size: 1rem;
+            }
         }
     </style>
 </head>

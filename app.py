@@ -7,7 +7,6 @@ from flask import Flask, render_template, request, jsonify
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
-
 app = Flask(__name__)
 
 limiter = Limiter(
@@ -72,18 +71,8 @@ def get_video_info():
         'geo_bypass': True,
     }
 
-    if 'youtube.com' in url or 'youtu.be' in url:
-        ydl_opts['extractor_args'] = {
-            'youtube': {
-                'player_client': ['ios', 'tv_embedded'],
-                'skip': ['webpage', 'configs']
-            }
-        }
-        ydl_opts['headers'] = {
-            'User-Agent': 'com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X; en_US)'
-        }
-        if os.path.exists(COOKIE_PATH):
-            ydl_opts['cookiefile'] = COOKIE_PATH
+    if 'tiktok.com' in url:
+        ydl_opts['extractor_args'] = {'tiktok': {'app_version': 'v2'}}
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -110,7 +99,7 @@ def get_video_info():
                 'qualities': formats_available
             })
     except Exception as e:
-        return jsonify({'error': 'Failed to fetch metadata. Invalid URL or private video.'}), 400
+        return jsonify({'error': 'Failed to fetch metadata.'}), 400
 
 @app.route('/download', methods=['POST'])
 @limiter.limit("10 per minute")
@@ -118,24 +107,33 @@ def download_video():
     data = request.json
     url = data.get('url')
     format_type = data.get('format', 'best')
+    start_time = data.get('start_time')
+    end_time = data.get('end_time')
 
     if not url:
         return jsonify({'error': 'URL is required'}), 400
 
+    postprocessors = []
+
     if format_type == 'mp3':
         format_spec = 'bestaudio/best'
-        postprocessors = [{
+        postprocessors.append({
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
             'preferredquality': '192',
-        }]
+        })
     elif format_type.endswith('p'):
         height = format_type.replace('p', '')
         format_spec = f'best[height<={height}][ext=mp4]/bestvideo[height<={height}]+bestaudio/best'
-        postprocessors = []
     else:
         format_spec = 'best[ext=mp4]/best'
-        postprocessors = []
+
+    # بەشکردن / بڕینی ڤیدیۆ لەڕێی FFmpeg
+    if start_time or end_time:
+        postprocessors.append({
+            'key': 'FFmpegVideoConvertor',
+            'preferedformat': 'mp4'
+        })
 
     ydl_opts = {
         'outtmpl': '/tmp/%(title)s_%(id)s.%(ext)s',
@@ -147,18 +145,16 @@ def download_video():
         'geo_bypass': True,
     }
 
-    if 'youtube.com' in url or 'youtu.be' in url:
-        ydl_opts['extractor_args'] = {
-            'youtube': {
-                'player_client': ['ios', 'tv_embedded'],
-                'skip': ['webpage', 'configs']
-            }
-        }
-        ydl_opts['headers'] = {
-            'User-Agent': 'com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X; en_US)'
-        }
-        if os.path.exists(COOKIE_PATH):
-            ydl_opts['cookiefile'] = COOKIE_PATH
+    # TikTok بەبێ watermark
+    if 'tiktok.com' in url:
+        ydl_opts['format'] = 'bestvideo+bestaudio/best'
+        ydl_opts['extractor_args'] = {'tiktok': {'app_version': 'v2'}}
+
+    # ڕێکخستنی بڕینی کات
+    if start_time or end_time:
+        def set_download_range(info_dict, ydl):
+            return [{'start_time': float(start_time or 0), 'end_time': float(end_time or info_dict.get('duration', 0))}]
+        ydl_opts['download_ranges'] = set_download_range
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:

@@ -39,7 +39,7 @@
             border-bottom: 1px solid var(--border);
         }
 
-        nav { display: flex; gap: 10px; }
+        nav { display: flex; gap: 10px; flex-wrap: wrap; }
         nav a {
             color: var(--text-muted);
             text-decoration: none;
@@ -79,7 +79,7 @@
             margin: 15px 0 15px 0;
         }
 
-        input[type="text"] {
+        input[type="text"], input[type="number"] {
             flex: 1;
             padding: 14px 18px;
             border: 1px solid var(--border);
@@ -89,7 +89,7 @@
             outline: none;
             font-size: 1rem;
         }
-        input[type="text"]:focus { border-color: var(--primary); }
+        input[type="text"]:focus, input[type="number"]:focus { border-color: var(--primary); }
 
         .btn-paste {
             padding: 0 16px;
@@ -101,6 +101,19 @@
             font-weight: 600;
         }
         .btn-paste:hover { background: rgba(255, 255, 255, 0.2); }
+
+        .trim-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            background: rgba(15, 23, 42, 0.4);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px dashed var(--border);
+        }
+        .trim-box div { flex: 1; text-align: left; }
+        [dir="rtl"] .trim-box div { text-align: right; }
+        .trim-box label { font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 5px; font-weight: 600; }
 
         .options-group {
             display: flex;
@@ -171,6 +184,32 @@
             font-size: 12px;
             font-weight: bold;
         }
+
+        /* گونجاندنی تەواو بۆ مۆبایل */
+        @media (max-width: 600px) {
+            header {
+                padding: 12px 4%;
+                flex-direction: column;
+                gap: 12px;
+            }
+            nav {
+                justify-content: center;
+                gap: 5px;
+            }
+            nav a {
+                padding: 6px 10px;
+                font-size: 0.85rem;
+            }
+            .container {
+                margin-top: 20px;
+                padding: 20px 15px;
+                width: 95%;
+            }
+            .trim-box {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -196,6 +235,18 @@
         <div class="input-group">
             <input type="text" id="videoUrl" data-i18n-ph="input_ph" placeholder="Paste video link here..." oninput="checkVideoInfo()">
             <button class="btn-paste" onclick="pasteFromClipboard()" data-i18n="btn_paste">Paste</button>
+        </div>
+
+        <!-- بەشی نوێی بڕینی ڤیدیۆ (Video Trimming) -->
+        <div class="trim-box">
+            <div>
+                <label data-i18n="lbl_start">Start Time (Sec)</label>
+                <input type="number" id="startTime" placeholder="0" min="0">
+            </div>
+            <div>
+                <label data-i18n="lbl_end">End Time (Sec)</label>
+                <input type="number" id="endTime" placeholder="End" min="0">
+            </div>
         </div>
 
         <div class="options-group">
@@ -232,6 +283,8 @@
                 "opt_best": "Best Quality (Auto)",
                 "opt_mp3": "Audio Only (MP3)",
                 "btn_dl": "Download",
+                "lbl_start": "Start Time (Sec)",
+                "lbl_end": "End Time (Sec)",
                 "msg_empty": "Please enter a URL!",
                 "msg_fetching": "Fetching video info...",
                 "msg_dl": "Downloading...",
@@ -251,6 +304,8 @@
                 "opt_best": "باشترین کوالێتی (ئۆتۆ)",
                 "opt_mp3": "تەنها دەنگ (MP3)",
                 "btn_dl": "داونلۆدکردن",
+                "lbl_start": "کاتی دەستپێک (چرکە)",
+                "lbl_end": "کاتی کۆتایی (چرکە)",
                 "msg_empty": "تکایە لینکێک دابنێ!",
                 "msg_fetching": "هێنانی زانیاری ڤیدیۆ...",
                 "msg_dl": "داگرتن...",
@@ -270,6 +325,8 @@
                 "opt_best": "أفضل جودة (تلقائي)",
                 "opt_mp3": "صوت فقط (MP3)",
                 "btn_dl": "تحميل",
+                "lbl_start": "وقت البداية (ثانية)",
+                "lbl_end": "وقت النهاية (ثانية)",
                 "msg_empty": "الرجاء إدخال الرابط!",
                 "msg_fetching": "جلب معلومات الفيديو...",
                 "msg_dl": "جاري التحميل...",
@@ -364,6 +421,9 @@
         async function startDownload() {
             const url = document.getElementById('videoUrl').value;
             const format = document.getElementById('qualitySelect').value;
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+
             const progressBarContainer = document.getElementById('progressBarContainer');
             const progressBar = document.getElementById('progressBar');
 
@@ -377,7 +437,12 @@
                 const response = await fetch('/download', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: url, format: format })
+                    body: JSON.stringify({ 
+                        url: url, 
+                        format: format,
+                        start_time: startTime,
+                        end_time: endTime
+                    })
                 });
 
                 const data = await response.json();
