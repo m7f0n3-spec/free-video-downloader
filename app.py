@@ -33,7 +33,31 @@ s3_client = boto3.client(
 def sanitize_filename(title):
     return re.sub(r'[\\/*?:"<>|]', "", title)
 
-COOKIE_PATH = '/etc/secrets/cookies.txt'
+# دڵنیا بوونەوە لە ڕێڕەوی دروستی cookies.txt لە فۆڵدەری پڕۆژەکە
+COOKIE_PATH = os.path.join(os.path.dirname(__file__), 'cookies.txt')
+
+def get_base_ydl_opts():
+    """ڕێکخستنە بنەڕەتییەکان بۆ کەمکردنەوەی ئەگەری بلۆکبوون"""
+    opts = {
+        'quiet': True,
+        'no_warnings': True,
+        'nocheckcertificate': True,
+        'geo_bypass': True,
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['android', 'ios']
+            }
+        }
+    }
+    
+    # ئەگەر فایلی cookies.txt بوونی هەبوو، بەرکاری بکە
+    if os.path.exists(COOKIE_PATH):
+        opts['cookiefile'] = COOKIE_PATH
+        
+    # ئەگەر پروکسی چالاک بوو لێرە دەتوانیت دیاری بکەیت
+    # opts['proxy'] = 'http://user:pass@proxy_ip:port'
+    
+    return opts
 
 @app.route('/')
 def index():
@@ -64,19 +88,7 @@ def get_video_info():
     if not url:
         return jsonify({'error': 'URL is required'}), 400
 
-    ydl_opts = {
-        'quiet': True,
-        'no_warnings': True,
-        'nocheckcertificate': True,
-        'geo_bypass': True,
-        'cookiefile': 'cookies.txt',
-        'proxy': 'http://user:pass@proxy_ip:port',
-        'extractor_args': {
-            'youtube': {
-            '   player_client': ['android', 'ios']
-            }
-        }
-    }
+    ydl_opts = get_base_ydl_opts()
 
     if 'tiktok.com' in url:
         ydl_opts['extractor_args'] = {'tiktok': {'app_version': 'v2'}}
@@ -106,6 +118,7 @@ def get_video_info():
                 'qualities': formats_available
             })
     except Exception as e:
+        print(f"Fetch Error: {str(e)}")
         return jsonify({'error': 'Failed to fetch metadata.'}), 400
 
 @app.route('/download', methods=['POST'])
@@ -135,29 +148,24 @@ def download_video():
     else:
         format_spec = 'best[ext=mp4]/best'
 
-    # بەشکردن / بڕینی ڤیدیۆ لەڕێی FFmpeg
     if start_time or end_time:
         postprocessors.append({
             'key': 'FFmpegVideoConvertor',
             'preferedformat': 'mp4'
         })
 
-    ydl_opts = {
+    ydl_opts = get_base_ydl_opts()
+    ydl_opts.update({
         'outtmpl': '/tmp/%(title)s_%(id)s.%(ext)s',
         'format': format_spec,
         'noplaylist': True,
-        'quiet': True,
         'postprocessors': postprocessors,
-        'nocheckcertificate': True,
-        'geo_bypass': True,
-    }
+    })
 
-    # TikTok بەبێ watermark
     if 'tiktok.com' in url:
         ydl_opts['format'] = 'bestvideo+bestaudio/best'
         ydl_opts['extractor_args'] = {'tiktok': {'app_version': 'v2'}}
 
-    # ڕێکخستنی بڕینی کات
     if start_time or end_time:
         def set_download_range(info_dict, ydl):
             return [{'start_time': float(start_time or 0), 'end_time': float(end_time or info_dict.get('duration', 0))}]
