@@ -151,10 +151,14 @@ def download_video():
             if os.path.exists(filename):
                 os.remove(filename)
 
-            # ٣. دروستکردنی لینکی داگرتنی کاتی (Presigned URL) بۆ ماوەی ١ کاتژمێر
+            # ٣. دروستکردنی لینکی داگرتنی کاتی (Presigned URL) بە شێوازی Force Download
             download_url = s3_client.generate_presigned_url(
                 'get_object',
-                Params={'Bucket': R2_BUCKET_NAME, 'Key': file_key},
+                Params={
+                    'Bucket': R2_BUCKET_NAME,
+                    'Key': file_key,
+                    'ResponseContentDisposition': f'attachment; filename="{file_key}"'
+                },
                 ExpiresIn=3600
             )
 
