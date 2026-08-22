@@ -21,6 +21,10 @@ R2_ACCESS_KEY_ID = os.getenv('R2_ACCESS_KEY_ID')
 R2_SECRET_ACCESS_KEY = os.getenv('R2_SECRET_ACCESS_KEY')
 R2_BUCKET_NAME = os.getenv('R2_BUCKET_NAME', 'my-media-downloader')
 
+# پروکسی و PO Token ئەگەر هەبن
+PROXY_URL = os.getenv('PROXY_URL')  # بۆ نموونە: http://user:pass@ip:port
+PO_TOKEN = os.getenv('PO_TOKEN')    # بۆ نموونە: web+YOUR_PO_TOKEN_HERE
+
 s3_client = boto3.client(
     's3',
     endpoint_url=f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com",
@@ -33,29 +37,42 @@ s3_client = boto3.client(
 def sanitize_filename(title):
     return re.sub(r'[\\/*?:"<>|]', "", title)
 
-# دڵنیا بوونەوە لە ڕێڕەوی دروستی cookies.txt لە فۆڵدەری پڕۆژەکە
+# دڵنیا بوونەوە لە ڕێڕەوی دروستی cookies.txt
 COOKIE_PATH = os.path.join(os.path.dirname(__file__), 'cookies.txt')
 
 def get_base_ydl_opts():
-    """ڕێکخستنە بنەڕەتییەکان بۆ کەمکردنەوەی ئەگەری بلۆکبوون"""
+    """ڕێکخستنە نوێکراوەکان بۆ تێپەڕاندنی بلۆکی یوتیوب"""
+    yt_client_config = ['tv', 'android', 'ios', 'web']
+    
+    yt_extractor_args = {
+        'player_client': yt_client_config
+    }
+    
+    # ئەگەر PO Token هەبوو، زیای بکە
+    if PO_TOKEN:
+        yt_extractor_args['po_token'] = [PO_TOKEN]
+
     opts = {
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
         'geo_bypass': True,
+        'http_headers': {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'Accept-Language': 'en-US,en;q=0.9',
+        },
         'extractor_args': {
-            'youtube': {
-                'player_client': ['android', 'ios']
-            }
+            'youtube': yt_extractor_args
         }
     }
     
-    # ئەگەر فایلی cookies.txt بوونی هەبوو، بەرکاری بکە
+    # بەکارهێنانی فایلی cookies.txt ئەگەر لە فۆڵدەرەکەدا هەبێت
     if os.path.exists(COOKIE_PATH):
         opts['cookiefile'] = COOKIE_PATH
         
-    # ئەگەر پروکسی چالاک بوو لێرە دەتوانیت دیاری بکەیت
-    # opts['proxy'] = 'http://user:pass@proxy_ip:port'
+    # بەکارهێنانی پروکسی ئەگەر دیاریکرا بێت
+    if PROXY_URL:
+        opts['proxy'] = PROXY_URL
     
     return opts
 
