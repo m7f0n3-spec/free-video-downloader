@@ -104,10 +104,10 @@
 
         .trim-box {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             margin-bottom: 15px;
             background: rgba(15, 23, 42, 0.4);
-            padding: 12px;
+            padding: 1px;
             border-radius: 12px;
             border: 1px dashed var(--border);
         }
@@ -209,6 +209,17 @@
                 flex-direction: column;
                 gap: 8px;
             }
+        }
+        .f2ter {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .fv {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -469,5 +480,8 @@
         });
     </script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    footer class="f2ter">
+        © 2026 Professional Web Video Downloader<br>Powered by A. Coder<a href="https://shorturl.at/wrmY1" class="fv"> FV-Downloader</a>
+    </footer>
 </body>
 </html>
