@@ -74,8 +74,10 @@ def get_video_info():
         'geo_bypass': True,
     }
 
-    if os.path.exists(COOKIE_PATH):
-        ydl_opts['cookiefile'] = COOKIE_PATH
+    # تەنها بۆ یوتیوب فایلی cookies بەکاربێنە ئەگەر فۆڵدەرەکە لە سەر سێرڤەر هەبوو
+    if 'youtube.com' in url or 'youtu.be' in url:
+        if os.path.exists(COOKIE_PATH):
+            ydl_opts['cookiefile'] = COOKIE_PATH
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -139,8 +141,10 @@ def download_video():
         'geo_bypass': True,
     }
 
-    if os.path.exists(COOKIE_PATH):
-        ydl_opts['cookiefile'] = COOKIE_PATH
+    # تەنها بۆ یوتیوب فایلی cookies بەکاربێنە
+    if 'youtube.com' in url or 'youtu.be' in url:
+        if os.path.exists(COOKIE_PATH):
+            ydl_opts['cookiefile'] = COOKIE_PATH
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
