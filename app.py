@@ -4,6 +4,7 @@ import base64
 import json
 import time
 import queue
+import subprocess
 import yt_dlp
 import boto3
 from botocore.config import Config
@@ -60,6 +61,20 @@ if YOUTUBE_COOKIES_BASE64:
     except Exception as e:
         print(f"Failed to load cookies from environment variable: {e}")
 
+def fetch_po_token():
+    if PO_TOKEN:
+        return PO_TOKEN
+    try:
+        js_script = os.path.join(os.path.dirname(__file__), 'generate-token.js')
+        if os.path.exists(js_script):
+            res = subprocess.run(['node', js_script], capture_output=True, text=True, timeout=10)
+            if res.returncode == 0:
+                data = json.loads(res.stdout)
+                return data.get('poToken')
+    except Exception as e:
+        print(f"Error executing generate-token.js: {e}")
+    return None
+
 def get_base_ydl_opts():
     # بەکارهێنانی fallback کلاینتەکان بەتایبەت tv/mweb بۆ تێپەڕاندنی بلۆکەکە
     yt_client_config = ['tv', 'android', 'ios', 'mweb']
@@ -68,8 +83,9 @@ def get_base_ydl_opts():
         'player_client': yt_client_config
     }
     
-    if PO_TOKEN:
-        yt_extractor_args['po_token'] = [PO_TOKEN]
+    current_po_token = fetch_po_token()
+    if current_po_token:
+        yt_extractor_args['po_token'] = [current_po_token]
 
     opts = {
         'quiet': True,
