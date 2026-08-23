@@ -61,8 +61,11 @@ if YOUTUBE_COOKIES_BASE64:
         print(f"Failed to load cookies from environment variable: {e}")
 
 def get_base_ydl_opts():
+    # بەکارهێنانی fallback کلاینتەکان بەتایبەت tv/mweb بۆ تێپەڕاندنی بلۆکەکە
+    yt_client_config = ['tv', 'android', 'ios', 'mweb']
+    
     yt_extractor_args = {
-        'player_client': ['ios', 'android', 'mweb']
+        'player_client': yt_client_config
     }
     
     if PO_TOKEN:
@@ -74,7 +77,7 @@ def get_base_ydl_opts():
         'nocheckcertificate': True,
         'geo_bypass': True,
         'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
             'Accept-Language': 'en-US,en;q=0.9',
         },
         'extractor_args': {
@@ -197,7 +200,7 @@ def download_video():
     postprocessors = []
 
     if format_type == 'mp3':
-        format_spec = 'bestaudio/best'
+        format_spec = 'ba/b'
         postprocessors.append({
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
@@ -205,10 +208,11 @@ def download_video():
         })
     elif format_type.endswith('p'):
         height = format_type.replace('p', '')
+        # بەکارهێنانی کورتترین و بەهێزترین زنجیرە بۆ دەستکەوتنی فۆرماتەکە
         format_spec = f'b[height<={height}]/bv[height<={height}]+ba/b'
     else:
-        # ڕێگەنادات هەڵەی "format not available" ڕووبدات چونکە سوود لە سادەترین زاراوەی yt-dlp دەبینێت
-        format_spec = 'b/bv+ba/best'
+        # بژارەی گشتی سادە (زامنکردنی هەبوونی فۆرمات)
+        format_spec = 'b/best'
 
     if start_time or end_time:
         postprocessors.append({
