@@ -164,6 +164,16 @@
 
         .preview-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 5px; }
         .preview-meta { color: var(--text-muted); font-size: 0.85rem; }
+        .playlist-badge {
+            display: inline-block;
+            background: #10b981;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-top: 5px;
+        }
 
         .progress-bar {
             width: 100%;
@@ -271,6 +281,7 @@
             <img id="prevImg" src="" alt="Thumbnail">
             <div class="preview-title" id="prevTitle"></div>
             <div class="preview-meta" id="prevMeta"></div>
+            <div id="playlistBadge" class="playlist-badge" style="display: none;"></div>
         </div>
 
         <div class="progress-bar" id="progressBarContainer">
@@ -299,7 +310,8 @@
                 "msg_dl": "Downloading...",
                 "msg_done": "Completed!",
                 "msg_err": "Error occurred during download.",
-                "msg_server": "Server Connection Error!"
+                "msg_server": "Server Connection Error!",
+                "playlist_info": "Photo Slideshow/Carousel ({count} Items) - Will Download as ZIP"
             },
             ku: {
                 "nav_home": "سەرەکی",
@@ -320,7 +332,8 @@
                 "msg_dl": "داگرتن...",
                 "msg_done": "تەواوبوو!",
                 "msg_err": "هەڵەیەک ڕوویدا لە کاتی داگرتن.",
-                "msg_server": "کێشەی پەیوەندیکردن بە سێرڤەر!"
+                "msg_server": "کێشەی پەیوەندیکردن بە سێرڤەر!",
+                "playlist_info": "کۆمەڵە وێنە/مێدیا دیاریکرا ({count} بڕگە) - بە فایلی ZIP دادەبەزێت"
             },
             ar: {
                 "nav_home": "الرئيسية",
@@ -341,7 +354,8 @@
                 "msg_dl": "جاري التحميل...",
                 "msg_done": "اكتمل!",
                 "msg_err": "حدث خطأ أثناء التحميل.",
-                "msg_server": "خطأ في الاتصال بالسيرفر!"
+                "msg_server": "خطأ في الاتصال بالسيرفر!",
+                "playlist_info": "شرائح صور/وسائط متعددة ({count} عناصر) - سيتم التحميل بصيغة ZIP"
             }
         };
 
@@ -396,6 +410,8 @@
         async function fetchMetadata(url) {
             const previewCard = document.getElementById('previewCard');
             const qualitySelect = document.getElementById('qualitySelect');
+            const playlistBadge = document.getElementById('playlistBadge');
+
             try {
                 const response = await fetch('/get-info', {
                     method: 'POST',
@@ -409,6 +425,14 @@
                     document.getElementById('prevTitle').innerText = data.title;
                     document.getElementById('prevMeta').innerText = `Duration: ${data.duration} | By: ${data.uploader}`;
                     
+                    if (data.is_playlist) {
+                        const badgeText = translations[currentLang]["playlist_info"].replace('{count}', data.playlist_count);
+                        playlistBadge.innerText = badgeText;
+                        playlistBadge.style.display = 'inline-block';
+                    } else {
+                        playlistBadge.style.display = 'none';
+                    }
+
                     qualitySelect.innerHTML = `<option value="best">${translations[currentLang]["opt_best"]}</option>`;
                     if (data.qualities && data.qualities.length > 0) {
                         data.qualities.forEach(q => {
@@ -442,10 +466,8 @@
             progressBar.style.width = '0%';
             progressBar.innerText = '0%';
 
-            // دروستکردنی task_id تایبەت بۆ پێوانەی خێرایی
             const taskId = 'task_' + Date.now();
 
-            // بەیەکبەستنی EventSource بۆ وەرگرتنی بەرەوپێشچوونی کاتی واقعی
             const eventSource = new EventSource(`/progress/${taskId}`);
             eventSource.onmessage = (event) => {
                 const data = JSON.parse(event.data);

@@ -4,7 +4,9 @@ import base64
 import json
 import time
 import queue
+import threading
 import subprocess
+import zipfile
 import yt_dlp
 import boto3
 from botocore.config import Config
@@ -34,6 +36,28 @@ YOUTUBE_COOKIES_BASE64 = os.getenv('YOUTUBE_COOKIES_BASE64')
 DOWNLOAD_DIR = os.path.join(os.path.dirname(__file__), 'downloads')
 if not os.path.exists(DOWNLOAD_DIR):
     os.makedirs(DOWNLOAD_DIR)
+
+# --- پرۆسەی خاوێنکردنەوەی ئۆتۆماتیکی فایلە کۆنەکان لە پاشبنەمادا ---
+def auto_cleanup_downloads_folder():
+    """هەر ٣٠ خولەک جارێک ئەو فایلانەی تەمەنیان لە ٣٠ خولەک زیاترە دەسڕێتەوە"""
+    while True:
+        try:
+            now = time.time()
+            max_age_seconds = 30 * 60  # ٣٠ خولەک
+            if os.path.exists(DOWNLOAD_DIR):
+                for filename in os.listdir(DOWNLOAD_DIR):
+                    file_path = os.path.join(DOWNLOAD_DIR, filename)
+                    if os.path.isfile(file_path):
+                        file_age = now - os.path.getmtime(file_path)
+                        if file_age > max_age_seconds:
+                            os.remove(file_path)
+                            print(f"[Cleanup] Deleted old file: {filename}")
+        except Exception as e:
+            print(f"[Cleanup Error]: {e}")
+        time.sleep(1800)
+
+cleanup_thread = threading.Thread(target=auto_cleanup_downloads_folder, daemon=True)
+cleanup_thread.start()
 
 s3_client = None
 if R2_ACCOUNT_ID and R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY:
@@ -76,7 +100,6 @@ def fetch_po_token():
     return None
 
 def get_base_ydl_opts():
-    # بەکارهێنانی fallback کلاینتەکان بەتایبەت tv/mweb بۆ تێپەڕاندنی بلۆکەکە
     yt_client_config = ['tv', 'android', 'ios', 'mweb']
     
     yt_extractor_args = {
@@ -169,8 +192,11 @@ def get_video_info():
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             
+            is_playlist = 'entries' in info
+            playlist_count = len(info.get('entries', [])) if is_playlist else 0
+
             formats_available = []
-            if 'formats' in info:
+            if not is_playlist and 'formats' in info:
                 seen_heights = set()
                 for fmt in info['formats']:
                     height = fmt.get('height')
@@ -187,11 +213,13 @@ def get_video_info():
                 formats_available.sort(key=lambda x: int(x['label'].split('p')[0]), reverse=True)
 
             return jsonify({
-                'title': info.get('title', 'Video'),
-                'thumbnail': info.get('thumbnail', ''),
-                'duration': info.get('duration_string', 'N/A'),
+                'title': info.get('title', 'Media'),
+                'thumbnail': info.get('thumbnail', '') if not is_playlist else (info['entries'][0].get('thumbnail') if info['entries'] else ''),
+                'duration': info.get('duration_string', 'N/A') if not is_playlist else 'Playlist',
                 'uploader': info.get('uploader', info.get('extractor_key', 'Unknown')),
-                'qualities': formats_available
+                'qualities': formats_available,
+                'is_playlist': is_playlist,
+                'playlist_count': playlist_count
             })
     except Exception as e:
         print(f"Fetch Error: {str(e)}")
@@ -224,10 +252,8 @@ def download_video():
         })
     elif format_type.endswith('p'):
         height = format_type.replace('p', '')
-        # بەکارهێنانی کورتترین و بەهێزترین زنجیرە بۆ دەستکەوتنی فۆرماتەکە
         format_spec = f'b[height<={height}]/bv[height<={height}]+ba/b'
     else:
-        # بژارەی گشتی سادە (زامنکردنی هەبوونی فۆرمات)
         format_spec = 'b/best'
 
     if start_time or end_time:
@@ -248,11 +274,14 @@ def download_video():
         elif d['status'] == 'finished':
             q.put({'percent': 95, 'status': 'uploading'})
 
+    task_download_dir = os.path.join(DOWNLOAD_DIR, task_id)
+    if not os.path.exists(task_download_dir):
+        os.makedirs(task_download_dir)
+
     ydl_opts = get_base_ydl_opts()
     ydl_opts.update({
-        'outtmpl': os.path.join(DOWNLOAD_DIR, '%(title)s_%(id)s.%(ext)s'),
+        'outtmpl': os.path.join(task_download_dir, '%(title)s_%(id)s.%(ext)s'),
         'format': format_spec,
-        'noplaylist': True,
         'postprocessors': postprocessors,
         'progress_hooks': [progress_hook]
     })
@@ -262,29 +291,47 @@ def download_video():
             return [{'start_time': float(start_time or 0), 'end_time': float(end_time or info_dict.get('duration', 0))}]
         ydl_opts['download_ranges'] = set_download_range
 
-    filename = None
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
-            filename = ydl.prepare_filename(info)
             
-            if format_type == 'mp3':
-                base, _ = os.path.splitext(filename)
-                filename = base + '.mp3'
+            is_playlist = 'entries' in info
+            
+            if is_playlist:
+                # کاتێک Playlist دەبێت: هەموو فایلەکان دەخەینە فایلی ZIPەوە
+                zip_filename = f"{sanitize_filename(info.get('title', 'playlist'))}_{task_id}.zip"
+                zip_path = os.path.join(DOWNLOAD_DIR, zip_filename)
 
-            safe_title = sanitize_filename(info.get('title', 'video'))
-            video_id = info.get('id', 'media')
-            ext = 'mp3' if format_type == 'mp3' else 'mp4'
-            
-            file_key = f"{safe_title}_{video_id}.{ext}"
+                with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                    for root, _, files in os.walk(task_download_dir):
+                        for file in files:
+                            zipf.write(os.path.join(root, file), file)
+                
+                final_file_path = zip_path
+                file_key = zip_filename
+            else:
+                # کاتێک تەنها ۱ ڤیدیۆ دەبێت
+                downloaded_files = os.listdir(task_download_dir)
+                if not downloaded_files:
+                    raise Exception("No file downloaded")
+                
+                single_file = os.path.join(task_download_dir, downloaded_files[0])
+                safe_title = sanitize_filename(info.get('title', 'video'))
+                ext = 'mp3' if format_type == 'mp3' else single_file.split('.')[-1]
+                file_key = f"{safe_title}_{info.get('id', 'media')}.{ext}"
+                final_file_path = os.path.join(DOWNLOAD_DIR, file_key)
+                os.rename(single_file, final_file_path)
+
+            # پاڕتاڵکردنی فۆڵدەری کاتی task
+            import shutil
+            shutil.rmtree(task_download_dir, ignore_errors=True)
 
             if s3_client:
                 s3_client.upload_file(
-                    Filename=filename,
+                    Filename=final_file_path,
                     Bucket=R2_BUCKET_NAME,
                     Key=file_key
                 )
-
                 download_url = s3_client.generate_presigned_url(
                     'get_object',
                     Params={
@@ -298,7 +345,7 @@ def download_video():
                 return jsonify({'download_url': download_url})
             else:
                 q.put({'percent': 100, 'status': 'completed'})
-                return jsonify({'download_url': f"/downloads/{os.path.basename(filename)}"})
+                return jsonify({'download_url': f"/downloads/{os.path.basename(final_file_path)}"})
 
     except Exception as e:
         print(f"Download Error Trace: {str(e)}")
@@ -306,11 +353,6 @@ def download_video():
         return jsonify({'error': str(e)}), 500
 
     finally:
-        if filename and os.path.exists(filename):
-            try:
-                os.remove(filename)
-            except Exception as clean_err:
-                print(f"Error cleaning file {filename}: {clean_err}")
         if task_id in progress_queues:
             del progress_queues[task_id]
 
