@@ -61,11 +61,8 @@ if YOUTUBE_COOKIES_BASE64:
         print(f"Failed to load cookies from environment variable: {e}")
 
 def get_base_ydl_opts():
-    # گۆڕینی کلاینتەکان بۆ تێپەڕاندنی بلۆکی سێرڤەر (Bot Detection)
-    yt_client_config = ['ios', 'android_creator', 'mweb']
-    
     yt_extractor_args = {
-        'player_client': yt_client_config
+        'player_client': ['ios', 'android', 'mweb']
     }
     
     if PO_TOKEN:
@@ -208,9 +205,10 @@ def download_video():
         })
     elif format_type.endswith('p'):
         height = format_type.replace('p', '')
-        format_spec = f'best[height<={height}]/bestvideo[height<={height}]+bestaudio/best'
+        format_spec = f'b[height<={height}]/bv[height<={height}]+ba/b'
     else:
-        format_spec = 'best[ext=mp4]/best'
+        # ڕێگەنادات هەڵەی "format not available" ڕووبدات چونکە سوود لە سادەترین زاراوەی yt-dlp دەبینێت
+        format_spec = 'b/bv+ba/best'
 
     if start_time or end_time:
         postprocessors.append({
