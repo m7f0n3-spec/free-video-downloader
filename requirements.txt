@@ -5,3 +5,4 @@ gunicorn
 werkzeug
 python-dotenv
 certifi
+boto3
