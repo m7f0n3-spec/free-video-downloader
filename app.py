@@ -220,7 +220,7 @@ def download_video():
         postprocessors.append({
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
-            'preferredquality': '192',
+            'preferredquality': '128',
         })
     elif format_type.endswith('p'):
         height = format_type.replace('p', '')
