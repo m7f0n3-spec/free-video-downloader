@@ -64,7 +64,7 @@ if YOUTUBE_COOKIES_BASE64:
         print(f"Failed to load cookies from environment variable: {e}")
 
 def get_base_ydl_opts():
-    yt_client_config = ['tv', 'android', 'ios', 'web']
+    yt_client_config = ['android', 'ios', 'web_creator', 'mweb']
     
     yt_extractor_args = {
         'player_client': yt_client_config
@@ -213,9 +213,11 @@ def download_video():
         })
     elif format_type.endswith('p'):
         height = format_type.replace('p', '')
-        format_spec = f'bestvideo[height<={height}]+bestaudio/best[height<={height}]/best[height<={height}]/best'
+        # بەکارهێنانی fallback بۆ تەنها یک فۆرمات بۆ ئەوەی بێ ffmpeg تووشی هەڵەی Merge نەبێت
+        format_spec = f'best[height<={height}]/bestvideo[height<={height}]+bestaudio/best'
     else:
-        format_spec = 'bestvideo+bestaudio/best'
+        # هەڵبژاردنی یەک فایلی ڕاستەوخۆ تا پێویستی بە ffmpeg merge نەبێت
+        format_spec = 'best[ext=mp4]/best'
 
     if start_time or end_time:
         postprocessors.append({
