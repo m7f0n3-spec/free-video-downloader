@@ -24,7 +24,6 @@ R2_ACCOUNT_ID = os.getenv('R2_ACCOUNT_ID')
 R2_ACCESS_KEY_ID = os.getenv('R2_ACCESS_KEY_ID')
 R2_SECRET_ACCESS_KEY = os.getenv('R2_SECRET_ACCESS_KEY')
 
-# پاککردنەوەی ناوی Bucket لە هەر هێمایەکی ناپێویست یان سلاش
 R2_BUCKET_NAME = os.getenv('R2_BUCKET_NAME', 'my-media-downloader').strip().strip('/')
 
 PROXY_URL = os.getenv('PROXY_URL')
@@ -47,14 +46,12 @@ if R2_ACCOUNT_ID and R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY:
     )
 
 def sanitize_filename(title):
-    # پاککردنەوەی هێما تایبەتەکان و کارەکتەرە کێشەسازەکان بۆ S3
     clean_title = re.sub(r'[^\w\s-]', '', title)
     clean_title = re.sub(r'\s+', '_', clean_title).strip('_')
     return clean_title if clean_title else 'video'
 
 COOKIE_PATH = os.path.join(os.path.dirname(__file__), 'cookies.txt')
 
-# پێشنیاری ۱: بارکردنی ئۆتۆماتیکی کوکیز لە Variable ئەگەر لەسەر Railway هەبێت
 if YOUTUBE_COOKIES_BASE64:
     try:
         decoded_cookies = base64.b64decode(YOUTUBE_COOKIES_BASE64).decode('utf-8')
@@ -64,7 +61,8 @@ if YOUTUBE_COOKIES_BASE64:
         print(f"Failed to load cookies from environment variable: {e}")
 
 def get_base_ydl_opts():
-    yt_client_config = ['android', 'ios', 'web_creator', 'mweb']
+    # گۆڕینی کلاینتەکان بۆ تێپەڕاندنی بلۆکی سێرڤەر (Bot Detection)
+    yt_client_config = ['ios', 'android_creator', 'mweb']
     
     yt_extractor_args = {
         'player_client': yt_client_config
@@ -79,7 +77,7 @@ def get_base_ydl_opts():
         'nocheckcertificate': True,
         'geo_bypass': True,
         'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
             'Accept-Language': 'en-US,en;q=0.9',
         },
         'extractor_args': {
@@ -95,7 +93,6 @@ def get_base_ydl_opts():
     
     return opts
 
-# پێشنیاری ۲: سیستەمی Progress Tracking بۆ کاتی واقعی
 progress_queues = {}
 
 @app.route('/')
@@ -122,7 +119,6 @@ def tiktok():
 def serve_downloaded_file(filename):
     return send_from_directory(DOWNLOAD_DIR, filename, as_attachment=True)
 
-# Endpoint بۆ ڕەوانەکردنی زانیاری بەرەوپێشچوون (SSE Stream)
 @app.route('/progress/<task_id>')
 def progress_stream(task_id):
     def event_stream():
@@ -142,7 +138,6 @@ def progress_stream(task_id):
 
     return Response(event_stream(), mimetype="text/event-stream")
 
-# پێشنیاری ٤: زانیاری وردتر لەسەر کوالێتی و قەبارەی فایلەکە
 @app.route('/get-info', methods=['POST'])
 @limiter.limit("20 per minute")
 def get_video_info():
@@ -213,10 +208,8 @@ def download_video():
         })
     elif format_type.endswith('p'):
         height = format_type.replace('p', '')
-        # بەکارهێنانی fallback بۆ تەنها یک فۆرمات بۆ ئەوەی بێ ffmpeg تووشی هەڵەی Merge نەبێت
         format_spec = f'best[height<={height}]/bestvideo[height<={height}]+bestaudio/best'
     else:
-        # هەڵبژاردنی یەک فایلی ڕاستەوخۆ تا پێویستی بە ffmpeg merge نەبێت
         format_spec = 'best[ext=mp4]/best'
 
     if start_time or end_time:
@@ -225,7 +218,6 @@ def download_video():
             'preferedformat': 'mp4'
         })
 
-    # Hook بۆ ناردنی ڕێژەی سەدی بۆ Queue
     def progress_hook(d):
         if d['status'] == 'downloading':
             p = d.get('_percent_str', '0%').strip()
@@ -269,7 +261,6 @@ def download_video():
             file_key = f"{safe_title}_{video_id}.{ext}"
 
             if s3_client:
-                # پێشنیاری ۳: بڵاوکردنەوە بۆ R2 بە ئاڕاستەی ڕاستەوخۆ
                 s3_client.upload_file(
                     Filename=filename,
                     Bucket=R2_BUCKET_NAME,
@@ -296,7 +287,6 @@ def download_video():
         q.put({'percent': 0, 'status': 'error', 'error': str(e)})
         return jsonify({'error': str(e)}), 500
 
-    # پێشنیاری ٥: پاککردنەوەی جێبەجێکراوی ئۆتۆماتیکی (Auto Cleanup)
     finally:
         if filename and os.path.exists(filename):
             try:
