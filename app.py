@@ -357,4 +357,8 @@ def download_video():
             del progress_queues[task_id]
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    # وەرگرتنی پۆرت لە Railway، ئەگەر نەبوو 8080 بەکاربهێنە
+    port = int(os.environ.get('PORT', 8080))
+    
+    # بەکارهێنانی '0.0.0.0' بۆ ڕێگەدان بە سێرڤەری Railway
+    app.run(host='0.0.0.0', port=port, debug=False)
