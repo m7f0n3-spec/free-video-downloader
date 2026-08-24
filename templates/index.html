@@ -25,6 +25,130 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* --- بەشی پێشەکی گڵۆپ (Intro Overlay) --- */
+        #intro-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #05070d;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s ease, transform 0.8s ease;
+        }
+
+        #neon-flash {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, rgba(99,102,241,0.8) 0%, rgba(165,180,252,0) 70%);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 10000;
+            transition: opacity 0.2s ease;
+        }
+
+        .bulb-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .bulb-container {
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .bulb-svg {
+            width: 110px;
+            height: 110px;
+            fill: #334155;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.1));
+            transition: transform 0.3s ease, fill 0.5s ease, filter 0.5s ease;
+            animation: pulseBulb 2s infinite ease-in-out;
+        }
+
+        .bulb-container:hover .bulb-svg {
+            transform: scale(1.08);
+            fill: #475569;
+        }
+
+        .pull-chain {
+            width: 4px;
+            height: 60px;
+            background: linear-gradient(to bottom, #475569, #94a3b8);
+            position: relative;
+            margin-top: -10px;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+        .pull-chain::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: -6px;
+            width: 16px;
+            height: 16px;
+            background: #cbd5e1;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .pull-chain.pulled {
+            transform: translateY(18px);
+        }
+
+        .bulb-container.on .bulb-svg {
+            fill: #fbbf24;
+            filter: drop-shadow(0 0 35px #fbbf24) drop-shadow(0 0 70px #f59e0b);
+            animation: none;
+        }
+
+        @keyframes pulseBulb {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+
+        .bulb-text {
+            margin-top: 30px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            min-height: 35px;
+            text-align: center;
+        }
+
+        .fade-out-up {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            transform: translateY(-100vh);
+        }
+
+        /* --- ناوەڕۆکی بەشەکان --- */
+        .main-content {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 1s ease 0.3s, transform 1s ease 0.3s;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .main-content.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         header {
@@ -41,15 +165,45 @@
             z-index: 100;
         }
 
-        nav { display: flex; gap: 10px; flex-wrap: wrap; }
+        nav {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
         nav a {
             color: var(--text-muted);
             text-decoration: none;
             font-weight: 600;
             padding: 8px 16px;
-            border-radius: 10px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
         }
-        nav a:hover, nav a.active { color: #fff; background: rgba(255, 255, 255, 0.08); }
+
+        nav a svg {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.2s ease;
+        }
+
+        nav a:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        nav a.active {
+            color: #fff;
+            background: var(--primary);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        nav a:active {
+            transform: scale(0.96);
+        }
 
         .lang-select {
             background: #1e293b;
@@ -79,70 +233,103 @@
         }
         .hero p { color: var(--text-muted); font-size: 1.2rem; margin-bottom: 50px; }
 
+        /* --- ستایلی کارتەکان بۆردەر و glow --- */
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 20px;
+            perspective: 1000px;
         }
+
         .card {
             background: var(--card-bg);
             backdrop-filter: blur(10px);
             padding: 30px 20px;
-            border-radius: 16px;
+            border-radius: 18px;
             border: 1px solid var(--border);
             text-decoration: none;
             color: var(--text);
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 700;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
-        }
-        .card:hover {
-            transform: translateY(-6px);
-            border-color: var(--primary);
-            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.3);
+            justify-content: center;
+            gap: 14px;
+            opacity: 0;
+            transform: translateY(40px) rotateX(-20deg);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
         }
 
-        /* بەشی گونجاندن لەگەڵ مۆبایل و تابلێت */
-        @media (max-width: 600px) {
-            header {
-                padding: 12px 4%;
-                flex-direction: column;
-                gap: 12px;
-            }
-            nav {
-                justify-content: center;
-                gap: 6px;
-            }
-            nav a {
-                padding: 6px 10px;
-                font-size: 0.85rem;
-            }
-            .hero {
-                padding: 30px 15px;
-            }
-            .hero h1 {
-                font-size: 1.8rem;
-                margin-bottom: 12px;
-            }
-            .hero p {
-                font-size: 0.95rem;
-                margin-bottom: 30px;
-            }
-            .cards-grid {
-                grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-                gap: 12px;
-            }
-            .card {
-                padding: 20px 10px;
-                font-size: 1rem;
-            }
+        .card svg {
+            width: 42px;
+            height: 42px;
+            transition: transform 0.3s ease, fill 0.3s ease;
         }
+
+        .main-content.visible .card {
+            opacity: 1;
+            transform: translateY(0) rotateX(0deg);
+        }
+
+        .main-content.visible .card:nth-child(1) { transition-delay: 0.1s; }
+        .main-content.visible .card:nth-child(2) { transition-delay: 0.25s; }
+        .main-content.visible .card:nth-child(3) { transition-delay: 0.4s; }
+        .main-content.visible .card:nth-child(4) { transition-delay: 0.55s; }
+
+        /* Hover Styles بۆ کارتەکان بە بۆردەری تایبەت */
+        .card.yt:hover {
+            border-color: #ff0000;
+            box-shadow: 0 10px 25px -5px rgba(255, 0, 0, 0.4);
+            transform: translateY(-8px) scale(1.03) !important;
+        }
+        .card.yt svg { fill: #ff0000; }
+
+        .card.fb:hover {
+            border-color: #1877f2;
+            box-shadow: 0 10px 25px -5px rgba(24, 119, 242, 0.4);
+            transform: translateY(-8px) scale(1.03) !important;
+        }
+        .card.fb svg { fill: #1877f2; }
+
+        .card.ig:hover {
+            border-color: #e4405f;
+            box-shadow: 0 10px 25px -5px rgba(228, 64, 95, 0.4);
+            transform: translateY(-8px) scale(1.03) !important;
+        }
+        .card.ig svg { fill: #e4405f; }
+
+        .card.tt:hover {
+            border-color: #00f2fe;
+            box-shadow: 0 10px 25px -5px rgba(0, 242, 254, 0.4);
+            transform: translateY(-8px) scale(1.03) !important;
+        }
+        .card.tt svg { fill: #00f2fe; }
+
+        .card:hover svg {
+            transform: scale(1.15);
+        }
+
+        /* خۆگونجاندن بۆ مۆبایل */
+        @media (max-width: 600px) {
+            header { padding: 12px 4%; flex-direction: column; gap: 12px; }
+            nav { width: 100%; justify-content: space-around; }
+            nav a span { display: none; }
+            nav a { padding: 10px 14px; border-radius: 50%; }
+            nav a svg { width: 22px; height: 22px; }
+            .hero { padding: 30px 15px; }
+            .hero h1 { font-size: 1.8rem; margin-bottom: 12px; }
+            .hero p { font-size: 0.95rem; margin-bottom: 30px; }
+            .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .card { padding: 20px 10px; font-size: 0.95rem; }
+            .card svg { width: 32px; height: 32px; }
+        }
+
         .f2ter {
             text-align: center;
-            margin-top: 30px;
+            margin-top: auto;
+            padding: 20px;
             font-size: 0.8rem;
             color: var(--text-muted);
         }
@@ -155,31 +342,78 @@
 </head>
 <body>
 
-    <header>
-        <nav>
-            <a href="/" class="active" data-i18n="nav_home">Home</a>
-            <a href="/youtube" data-i18n="nav_youtube">YouTube</a>
-            <a href="/facebook" data-i18n="nav_facebook">Facebook</a>
-            <a href="/instagram" data-i18n="nav_instagram">Instagram</a>
-            <a href="/tiktok" data-i18n="nav_tiktok">TikTok</a>
-        </nav>
-        <select id="language-select" class="lang-select" onchange="changeLanguage(this.value)">
-            <option value="en">English</option>
-            <option value="ku">کوردی</option>
-            <option value="ar">العربية</option>
-        </select>
-    </header>
+    <div id="neon-flash"></div>
 
-    <div class="hero">
-        <h1 data-i18n="hero_title">Download High Quality Videos</h1>
-        <p data-i18n="hero_desc">Select your preferred platform to start downloading videos effortlessly.</p>
-
-        <div class="cards-grid">
-            <a href="/youtube" class="card"><span data-i18n="nav_youtube">YouTube</span></a>
-            <a href="/facebook" class="card"><span data-i18n="nav_facebook">Facebook</span></a>
-            <a href="/instagram" class="card"><span data-i18n="nav_instagram">Instagram</span></a>
-            <a href="/tiktok" class="card"><span data-i18n="nav_tiktok">TikTok</span></a>
+    <div id="intro-overlay">
+        <div class="bulb-wrapper">
+            <div class="bulb-container" id="bulb-btn">
+                <svg class="bulb-svg" viewBox="0 0 24 24">
+                    <path d="M12,2A7,7 0 0,0 5,9C5,11.38 6.19,13.47 8,14.74V17A1,1 0 0,0 9,18H15A1,1 0 0,0 16,17V14.74C17.81,13.47 19,11.38 19,9A7,7 0 0,0 12,2M9,21A1,1 0 0,0 10,22H14A1,1 0 0,0 15,21V20H9V21Z" />
+                </svg>
+            </div>
+            <div class="pull-chain" id="pull-chain"></div>
         </div>
+        <div class="bulb-text" id="typewriter-text">Click the bulb to enter</div>
+    </div>
+
+    <div class="main-content" id="main-content">
+        <header>
+            <nav>
+                <a href="/" class="active" data-i18n="nav_home">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                    <span>Home</span>
+                </a>
+                <a href="/youtube" data-i18n="nav_youtube">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                    <span>YouTube</span>
+                </a>
+                <a href="/facebook" data-i18n="nav_facebook">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    <span>Facebook</span>
+                </a>
+                <a href="/instagram" data-i18n="nav_instagram">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                    <span>Instagram</span>
+                </a>
+                <a href="/tiktok" data-i18n="nav_tiktok">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.28-2.42.53-4.9 2.19-6.68 1.54-1.66 3.75-2.6 6.01-2.58.01 1.41-.01 2.82.01 4.23-.97-.02-1.95.27-2.73.83-.87.61-1.41 1.58-1.5 2.63-.12 1.25.32 2.5 1.18 3.39.85.89 2.08 1.34 3.3 1.22 1.22-.08 2.33-.71 2.97-1.74.52-.81.72-1.78.71-2.74V.02z"/></svg>
+                    <span>TikTok</span>
+                </a>
+            </nav>
+            <select id="language-select" class="lang-select" onchange="changeLanguage(this.value)">
+                <option value="en">English</option>
+                <option value="ku">کوردی</option>
+                <option value="ar">العربية</option>
+            </select>
+        </header>
+
+        <div class="hero">
+            <h1 data-i18n="hero_title">Download High Quality Videos</h1>
+            <p data-i18n="hero_desc">Select your preferred platform to start downloading videos effortlessly.</p>
+
+            <div class="cards-grid">
+                <a href="/youtube" class="card yt">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                    <span data-i18n="nav_youtube">YouTube</span>
+                </a>
+                <a href="/facebook" class="card fb">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    <span data-i18n="nav_facebook">Facebook</span>
+                </a>
+                <a href="/instagram" class="card ig">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                    <span data-i18n="nav_instagram">Instagram</span>
+                </a>
+                <a href="/tiktok" class="card tt">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.28-2.42.53-4.9 2.19-6.68 1.54-1.66 3.75-2.6 6.01-2.58.01 1.41-.01 2.82.01 4.23-.97-.02-1.95.27-2.73.83-.87.61-1.41 1.58-1.5 2.63-.12 1.25.32 2.5 1.18 3.39.85.89 2.08 1.34 3.3 1.22 1.22-.08 2.33-.71 2.97-1.74.52-.81.72-1.78.71-2.74V.02z"/></svg>
+                    <span data-i18n="nav_tiktok">TikTok</span>
+                </a>
+            </div>
+        </div>
+
+        <footer class="f2ter">
+            © 2026 Professional Web Video Downloader<br>Powered by A. Coder<a href="https://shorturl.at/wrmY1" class="fv"> FV-Downloader</a>
+        </footer>
     </div>
 
     <script>
@@ -221,7 +455,12 @@
             document.querySelectorAll('[data-i18n]').forEach(elem => {
                 const key = elem.getAttribute('data-i18n');
                 if (translations[lang] && translations[lang][key]) {
-                    elem.innerText = translations[lang][key];
+                    const span = elem.querySelector('span');
+                    if (span) {
+                        span.innerText = translations[lang][key];
+                    } else {
+                        elem.innerText = translations[lang][key];
+                    }
                 }
             });
             
@@ -229,14 +468,117 @@
             if (selectElem) selectElem.value = lang;
         }
 
+        /* --- 1. دەقی تایپڕایته‌ر --- */
+        const messages = [
+            "Click the bulb or chain to enter...",
+            "انقر على المصباح أو السلسلة للدخول...",
+            "بۆ چوونه ژوورەوە کلیک لە گڵۆپەکە یان زنجیرەکە بکە..."
+        ];
+        let msgIdx = 0;
+        let charIdx = 0;
+        let isDeleting = false;
+        const typewriterEl = document.getElementById('typewriter-text');
+
+        function typeLoop() {
+            if (!typewriterEl) return;
+            const currentMsg = messages[msgIdx];
+            if (isDeleting) {
+                typewriterEl.innerText = currentMsg.substring(0, charIdx--);
+            } else {
+                typewriterEl.innerText = currentMsg.substring(0, charIdx++);
+            }
+
+            let typeSpeed = isDeleting ? 40 : 80;
+
+            if (!isDeleting && charIdx === currentMsg.length + 1) {
+                typeSpeed = 1800;
+                isDeleting = true;
+            } else if (isDeleting && charIdx === 0) {
+                isDeleting = false;
+                msgIdx = (msgIdx + 1) % messages.length;
+                typeSpeed = 400;
+            }
+
+            setTimeout(typeLoop, typeSpeed);
+        }
+
+        /* --- 2. دەنگی کلیک --- */
+        function playSwitchSound() {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(120, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.08);
+
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start();
+                osc.stop(ctx.currentTime + 0.08);
+            } catch (e) {
+                console.log("Audio play blocked.");
+            }
+        }
+
+        /* --- 3. لۆجیکی گڵۆپەکە --- */
+        const bulbBtn = document.getElementById('bulb-btn');
+        const pullChain = document.getElementById('pull-chain');
+        const introOverlay = document.getElementById('intro-overlay');
+        const mainContent = document.getElementById('main-content');
+        const neonFlash = document.getElementById('neon-flash');
+        let activated = false;
+
+        function activateLight() {
+            if (activated) return;
+            activated = true;
+
+            sessionStorage.setItem('bulb_turned_on', 'true');
+
+            playSwitchSound();
+            pullChain.classList.add('pulled');
+
+            setTimeout(() => {
+                bulbBtn.classList.add('on');
+                neonFlash.style.opacity = '1';
+                setTimeout(() => { neonFlash.style.opacity = '0'; }, 300);
+            }, 100);
+
+            setTimeout(() => {
+                introOverlay.classList.add('fade-out-up');
+                mainContent.classList.add('visible');
+            }, 600);
+        }
+
+        bulbBtn.addEventListener('click', activateLight);
+        pullChain.addEventListener('click', activateLight);
+
         document.addEventListener('DOMContentLoaded', () => {
             const savedLang = localStorage.getItem('app_lang') || 'en';
             changeLanguage(savedLang);
+
+            const navEntries = performance.getEntriesByType('navigation');
+            const isReload = navEntries.length > 0 && navEntries[0].type === 'reload';
+
+            if (isReload) {
+                sessionStorage.removeItem('bulb_turned_on');
+            }
+
+            if (sessionStorage.getItem('bulb_turned_on') === 'true') {
+                introOverlay.style.display = 'none';
+                mainContent.classList.add('visible');
+            } else {
+                typeLoop();
+            }
         });
     </script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <footer class="f2ter">
-        © 2026 Professional Web Video Downloader<br>Powered by A. Coder<a href="https://shorturl.at/wrmY1" class="fv"> FV-Downloader</a>
-    </footer>
 </body>
 </html>

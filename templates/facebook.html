@@ -7,25 +7,50 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
+            --primary: #1877f2;
+            --primary-hover: #0d65d9;
+            --primary-glow: rgba(24, 119, 242, 0.4);
             --bg: #0b0f19;
-            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-bg: rgba(15, 23, 42, 0.75);
             --border: rgba(255, 255, 255, 0.1);
             --text: #f8fafc;
             --text-muted: #94a3b8;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; transition: all 0.2s ease; }
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        
         body {
             background-color: var(--bg);
-            background-image: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15), transparent 50%);
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(24, 119, 242, 0.25), transparent 60%),
+                radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.15), transparent 50%);
             color: var(--text);
             font-family: 'Plus Jakarta Sans', 'Vazirmatn', sans-serif;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* --- ئەنیمەیشنی خولانەوەی پاشبنەما --- */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(24, 119, 242, 0.08) 0%, transparent 50%);
+            animation: rotateBg 25s linear infinite;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        @keyframes rotateBg {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         header {
@@ -34,20 +59,58 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(12px);
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        nav { display: flex; gap: 10px; flex-wrap: wrap; }
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         nav a {
             color: var(--text-muted);
             text-decoration: none;
             font-weight: 600;
             padding: 8px 16px;
-            border-radius: 10px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
         }
-        nav a:hover, nav a.active { color: #fff; background: rgba(255, 255, 255, 0.08); }
+
+        nav a svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+
+        /* تۆخکردنی دەق و ئایکۆن کاتێک دەچیتە سەری (Hover) */
+        nav a:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* ستایلی چاککراو و گەشاوە بۆ پەڕەی چالاک */
+        nav a.active {
+            color: #ffffff !important;
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            font-weight: 800;
+            box-shadow: 0 0 15px var(--primary-glow), 0 4px 12px rgba(24, 119, 242, 0.3);
+        }
+
+        nav a.active svg {
+            fill: #ffffff !important;
+            filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8));
+        }
 
         .lang-select {
             background: #1e293b;
@@ -60,23 +123,46 @@
             outline: none;
         }
 
+        /* --- ئەنیمەیشنی سەركەوتنی Container بە Glow --- */
         .container {
             background: var(--card-bg);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);
             padding: 35px;
-            border-radius: 20px;
+            border-radius: 24px;
             border: 1px solid var(--border);
-            margin-top: 40px;
+            margin-top: 50px;
             width: 90%;
             max-width: 550px;
             text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 35px rgba(24, 119, 242, 0.2);
+            animation: floatUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            position: relative;
+        }
+
+        .container:hover {
+            border-color: rgba(24, 119, 242, 0.4);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 45px rgba(24, 119, 242, 0.3);
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 0; transform: translateY(40px) scale(0.96); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .container h2 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
         }
 
         .input-group {
             display: flex;
             gap: 8px;
-            margin: 15px 0 15px 0;
+            margin: 20px 0 15px 0;
+            position: relative;
         }
 
         input[type="text"], input[type="number"] {
@@ -89,45 +175,49 @@
             outline: none;
             font-size: 1rem;
         }
-        input[type="text"]:focus, input[type="number"]:focus { border-color: var(--primary); }
+        input[type="text"]:focus, input[type="number"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 18px var(--primary-glow);
+        }
 
+        /* --- دوگمەی Paste بە ڕەنگی فەیسبووک --- */
         .btn-paste {
-            padding: 0 10px;
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border: 1px solid var(--border);
-            border-radius: 10px;
+            padding: 0 18px;
+            background: rgba(24, 119, 242, 0.12);
+            color: #60a5fa;
+            border: 1px solid rgba(24, 119, 242, 0.3);
+            border-radius: 12px;
             cursor: pointer;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .btn-paste:hover { background: rgba(255, 255, 255, 0.2); }
+        .btn-paste:hover {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+            transform: translateY(-2px);
+        }
 
         .trim-box {
             display: flex !important;
             gap: 12px !important;
             width: 100% !important;
             box-sizing: border-box !important;
-            padding: 12px !important;
+            padding: 14px !important;
             background: rgba(15, 23, 42, 0.4);
-            border-radius: 12px;
+            border-radius: 14px;
             border: 1px dashed var(--border);
+            margin-bottom: 15px;
         }
 
-        .trim-box > div {
-            flex: 1 1 0% !important;
-            min-width: 0 !important;
-        }
-        .trim-box input {
-            width: 100% !important;
-            box-sizing: border-box !important;
-        }
+        .trim-box > div { flex: 1 1 0% !important; min-width: 0 !important; }
+        .trim-box input { width: 100% !important; box-sizing: border-box !important; }
         .trim-box label { font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 5px; font-weight: 600; }
 
-        .options-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
+        .options-group { display: flex; gap: 10px; margin-bottom: 20px; }
 
         select.quality-select {
             width: 100%;
@@ -135,120 +225,133 @@
             background: #1e293b;
             color: #fff;
             border: 1px solid var(--border);
-            border-radius: 10px;
+            border-radius: 12px;
             outline: none;
             font-weight: 600;
+            cursor: pointer;
         }
 
+        /* --- دوگمەی سەرەکی داونلۆدی فەیسبووک --- */
         button.btn-main {
             width: 100%;
-            padding: 14px;
-            background-color: var(--primary);
+            padding: 15px;
+            background: linear-gradient(135deg, #1877f2, #0056b3);
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             cursor: pointer;
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 1.05rem;
+            box-shadow: 0 8px 25px -4px var(--primary-glow);
+            position: relative;
+            overflow: hidden;
         }
-        button.btn-main:hover { background-color: var(--primary-hover); }
+        button.btn-main:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px -2px rgba(24, 119, 242, 0.6);
+            background: linear-gradient(135deg, #1b82ff, #0d65d9);
+        }
 
+        /* --- پێشاندانی وێنە و ناوی ڤیدیۆ بە ئەنیمەیشن --- */
         .preview-card {
             display: none;
-            background: rgba(15, 23, 42, 0.8);
+            background: rgba(15, 23, 42, 0.85);
             border: 1px solid var(--border);
-            border-radius: 12px;
+            border-radius: 16px;
             padding: 15px;
             margin-top: 20px;
             text-align: left;
+            animation: fadeIn 0.5s ease forwards;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         [dir="rtl"] .preview-card { text-align: right; }
 
         .preview-card img {
             width: 100%;
-            border-radius: 8px;
-            margin-bottom: 10px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            object-fit: cover;
         }
 
-        .preview-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 5px; }
+        .preview-title { font-weight: 700; font-size: 1rem; margin-bottom: 6px; color: #fff; }
         .preview-meta { color: var(--text-muted); font-size: 0.85rem; }
+        
         .playlist-badge {
             display: inline-block;
             background: #10b981;
             color: #fff;
-            padding: 2px 8px;
-            border-radius: 6px;
+            padding: 4px 10px;
+            border-radius: 8px;
             font-size: 0.75rem;
             font-weight: bold;
-            margin-top: 5px;
+            margin-top: 8px;
         }
 
+        /* --- پڕۆگرێس باری شلگێنی درەوشاوە --- */
         .progress-bar {
             width: 100%;
-            background-color: rgba(255,255,255,0.05);
-            border-radius: 10px;
+            background-color: rgba(15, 23, 42, 0.8);
+            border-radius: 12px;
             margin-top: 20px;
             display: none;
             overflow: hidden;
             border: 1px solid var(--border);
+            padding: 3px;
         }
         .progress {
             width: 0%;
             height: 22px;
-            background-color: #10b981;
+            background: linear-gradient(90deg, #1877f2, #10b981);
+            border-radius: 9px;
             text-align: center;
             color: white;
             line-height: 22px;
             font-size: 12px;
             font-weight: bold;
+            box-shadow: 0 0 15px rgba(24, 119, 242, 0.5);
+            transition: width 0.3s ease;
         }
 
         @media (max-width: 600px) {
-            header {
-                padding: 12px 4%;
-                flex-direction: column;
-                gap: 12px;
-            }
-            nav {
-                justify-content: center;
-                gap: 5px;
-            }
-            nav a {
-                padding: 6px 10px;
-                font-size: 0.85rem;
-            }
-            .container {
-                margin-top: 20px;
-                padding: 20px 15px;
-                width: 95%;
-            }
-            .trim-box {
-                flex-direction: column;
-                gap: 8px;
-            }
+            header { padding: 12px 4%; flex-direction: column; gap: 12px; }
+            nav { justify-content: center; gap: 5px; flex-wrap: wrap; }
+            nav a { padding: 6px 10px; font-size: 0.85rem; }
+            .container { margin-top: 20px; padding: 20px 15px; width: 95%; }
+            .trim-box { flex-direction: column; gap: 8px; }
         }
-        .f2ter {
-            text-align: center;
-            margin-top: 30px;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-        .fv {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-        }
+
+        .f2ter { text-align: center; margin-top: auto; padding: 25px; font-size: 0.8rem; color: var(--text-muted); }
+        .fv { color: var(--primary); text-decoration: none; font-weight: 600; }
     </style>
 </head>
 <body>
 
     <header>
         <nav>
-            <a href="/" data-i18n="nav_home">Home</a>
-            <a href="/youtube" data-i18n="nav_youtube">YouTube</a>
-            <a href="/facebook" class="active" data-i18n="nav_facebook">Facebook</a>
-            <a href="/instagram" data-i18n="nav_instagram">Instagram</a>
-            <a href="/tiktok" data-i18n="nav_tiktok">TikTok</a>
+            <a href="/" data-i18n="nav_home">
+                <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                <span>Home</span>
+            </a>
+            <a href="/youtube" data-i18n="nav_youtube">
+                <svg viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                <span>YouTube</span>
+            </a>
+            <a href="/facebook" class="active" data-i18n="nav_facebook">
+                <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                <span>Facebook</span>
+            </a>
+            <a href="/instagram" data-i18n="nav_instagram">
+                <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                <span>Instagram</span>
+            </a>
+            <a href="/tiktok" data-i18n="nav_tiktok">
+                <svg viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.28-2.42.53-4.9 2.19-6.68 1.54-1.66 3.75-2.6 6.01-2.58.01 1.41-.01 2.82.01 4.23-.97-.02-1.95.27-2.73.83-.87.61-1.41 1.58-1.5 2.63-.12 1.25.32 2.5 1.18 3.39.85.89 2.08 1.34 3.3 1.22 1.22-.08 2.33-.71 2.97-1.74.52-.81.72-1.78.71-2.74V.02z"/></svg>
+                <span>TikTok</span>
+            </a>
         </nav>
         <select id="language-select" class="lang-select" onchange="changeLanguage(this.value)">
             <option value="en">English</option>
@@ -257,7 +360,7 @@
         </select>
     </header>
 
-    <div class="container">
+    <div class="container" id="mainContainer">
         <h2 data-i18n="fb_title">Facebook Downloader</h2>
         
         <div class="input-group">
@@ -377,8 +480,15 @@
             
             document.querySelectorAll('[data-i18n]').forEach(elem => {
                 const key = elem.getAttribute('data-i18n');
-                if (translations[lang] && translations[lang][key]) elem.innerText = translations[lang][key];
-            });
+                 if (translations[lang] && translations[lang][key]) {
+                    const span = elem.querySelector('span');
+                    if (span) {
+                        span.innerText = translations[lang][key];
+                    } else {
+                        elem.innerText = translations[lang][key];
+                    }
+                 }
+                });
 
             document.querySelectorAll('[data-i18n-ph]').forEach(elem => {
                 const key = elem.getAttribute('data-i18n-ph');
@@ -459,6 +569,19 @@
             }
         }
 
+        function triggerSuccessGlow() {
+            const card = document.getElementById('mainContainer');
+            card.style.transform = 'scale(1.02)';
+            card.style.borderColor = '#10b981';
+            card.style.boxShadow = '0 0 50px rgba(16, 185, 129, 0.4)';
+            
+            setTimeout(() => {
+                card.style.transform = 'scale(1)';
+                card.style.borderColor = 'var(--border)';
+                card.style.boxShadow = '0 20px 50px rgba(0,0,0,0.5), 0 0 35px rgba(24, 119, 242, 0.2)';
+            }, 1500);
+        }
+
         async function startDownload() {
             const url = document.getElementById('videoUrl').value;
             const format = document.getElementById('qualitySelect').value;
@@ -512,6 +635,7 @@
                 if (response.ok && data.download_url) {
                     progressBar.style.width = '100%';
                     progressBar.innerText = translations[currentLang]["msg_done"];
+                    triggerSuccessGlow();
                     eventSource.close();
 
                     window.location.href = data.download_url;
@@ -533,6 +657,7 @@
         });
     </script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
     <footer class="f2ter">
         © 2026 Professional Web Video Downloader<br>Powered by A. Coder<a href="https://shorturl.at/wrmY1" class="fv"> FV-Downloader</a>
     </footer>
