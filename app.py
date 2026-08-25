@@ -12,16 +12,50 @@ import boto3
 from botocore.config import Config
 from flask import Flask, render_template, request, jsonify, send_from_directory, Response
 from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 
 app = Flask(__name__)
 
+# --- فەنکشنی تایبەت بە وەرگرتنی IPی ڕاستەقینەی بەکارهێنەر لە Cloudflare ---
+def get_client_ip():
+    # 1. وەرگرتنی IP ئەگەر لە پشت Cloudflare بێت
+    cf_ip = request.headers.get('CF-Connecting-IP')
+    if cf_ip:
+        return cf_ip.strip()
+    
+    # 2. ئەگەر لە پشت پڕۆکسی یان وێب سێرڤەری تر بێت (وەک Nginx/Railway)
+    forwarded_for = request.headers.get('X-Forwarded-For')
+    if forwarded_for:
+        return forwarded_for.split(',')[0].strip()
+    
+    # 3. لە باری ئاساییدا (مەحەلی / Local)
+    return request.remote_addr or '127.0.0.1'
+
 limiter = Limiter(
-    get_remote_address,
+    get_client_ip,
     app=app,
     default_limits=["200 per day", "50 per hour"],
     storage_uri="memory://"
 )
+
+# لیستی کاتی بۆ تۆمارکردنی IP سەردانکەران (تەنها بۆ نیشاندانی ئەدمین)
+visitor_logs = []
+
+@app.before_request
+def log_visitor_ip():
+    # تۆمارکردنی IP و کات و ئادڕێسی سەردانکراو
+    ip = get_client_ip()
+    path = request.path
+    
+    # ڕێگری لە تۆمارکردنی فایلە ساتییەکان یان لاپەڕەی ئەدمین
+    if not path.startswith('/static') and not path.startswith('/admin'):
+        visitor_logs.append({
+            "ip": ip,
+            "path": path,
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+        })
+        # هێشتنەوەی تەنها دواکەوتووترین 500 تۆمار بۆ پاراستنی بیرگە (Memory)
+        if len(visitor_logs) > 500:
+            visitor_logs.pop(0)
 
 R2_ACCOUNT_ID = os.getenv('R2_ACCOUNT_ID')
 R2_ACCESS_KEY_ID = os.getenv('R2_ACCESS_KEY_ID')
@@ -153,6 +187,15 @@ def instagram():
 @app.route('/tiktok')
 def tiktok():
     return render_template('tiktok.html')
+
+# --- ڕووتی تایبەت بە ئەدمین بۆ بینینی IP زەردەشتکاران ---
+@app.route('/admin/ips')
+def view_admin_ips():
+    # دەتوانیت لێرەدا پشکنینی سێشن یان تێپەڕەواشەی سەرەکی بکەیت
+    return jsonify({
+        "total_requests": len(visitor_logs),
+        "logs": visitor_logs
+    })
 
 @app.route('/downloads/<path:filename>')
 def serve_downloaded_file(filename):
@@ -298,7 +341,6 @@ def download_video():
             is_playlist = 'entries' in info
             
             if is_playlist:
-                # کاتێک Playlist دەبێت: هەموو فایلەکان دەخەینە فایلی ZIPەوە
                 zip_filename = f"{sanitize_filename(info.get('title', 'playlist'))}_{task_id}.zip"
                 zip_path = os.path.join(DOWNLOAD_DIR, zip_filename)
 
@@ -310,7 +352,6 @@ def download_video():
                 final_file_path = zip_path
                 file_key = zip_filename
             else:
-                # کاتێک تەنها ۱ ڤیدیۆ دەبێت
                 downloaded_files = os.listdir(task_download_dir)
                 if not downloaded_files:
                     raise Exception("No file downloaded")
@@ -322,7 +363,6 @@ def download_video():
                 final_file_path = os.path.join(DOWNLOAD_DIR, file_key)
                 os.rename(single_file, final_file_path)
 
-            # پاڕتاڵکردنی فۆڵدەری کاتی task
             import shutil
             shutil.rmtree(task_download_dir, ignore_errors=True)
 
@@ -357,8 +397,5 @@ def download_video():
             del progress_queues[task_id]
 
 if __name__ == '__main__':
-    # وەرگرتنی پۆرت لە Railway، ئەگەر نەبوو 8080 بەکاربهێنە
     port = int(os.environ.get('PORT', 8080))
-    
-    # بەکارهێنانی '0.0.0.0' بۆ ڕێگەدان بە سێرڤەری Railway
     app.run(host='0.0.0.0', port=port, debug=False)
