@@ -185,6 +185,7 @@
         /* --- بەشی کەتکردنی ڤیدیۆ --- */
         .trim-box {
             display: flex;
+            flex-wrap: wrap;
             gap: 10px;
             width: 100%;
             box-sizing: border-box;
@@ -195,7 +196,16 @@
             margin-bottom: 15px;
         }
 
-        .trim-box > div { flex: 1; min-width: 0; }
+        .trim-title {
+            width: 100%;
+            text-align: start;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 2px;
+        }
+
+        .trim-box > div:not(.trim-title) { flex: 1; min-width: 0; }
         
         input[type="number"] {
             width: 100%;
@@ -376,6 +386,7 @@
         </div>
 
         <div class="trim-box">
+            <div class="trim-title" data-i18n="trim_title">Trim Video (Optional)</div>
             <div>
                 <label data-i18n="lbl_start">Start Time (Sec)</label>
                 <input type="number" id="startTime" placeholder="0" min="0">
@@ -419,6 +430,7 @@
                 "tt_title": "TikTok Downloader",
                 "input_ph": "Paste video link here...",
                 "btn_paste": "Paste",
+                "trim_title": "Trim Video (Optional)",
                 "opt_best": "Best Quality (Auto)",
                 "opt_mp3": "Audio Only (MP3)",
                 "btn_dl": "Download",
@@ -441,6 +453,7 @@
                 "tt_title": "داگرتنی ڤیدیۆی تیکتۆک",
                 "input_ph": "لینکی ڤیدیۆکە لێرە دابنێ...",
                 "btn_paste": "پەیست",
+                "trim_title": "بڕینی ڤیدیۆ (ئارەزوومەندانە)",
                 "opt_best": "باشترین کوالێتی (ئۆتۆ)",
                 "opt_mp3": "تەنها دەنگ (MP3)",
                 "btn_dl": "داونلۆدکردن",
@@ -463,6 +476,7 @@
                 "tt_title": "تحميل فيديوهات تيك توك",
                 "input_ph": "ألصق رابط الفيديو هنا...",
                 "btn_paste": "لصق",
+                "trim_title": "قص الفيديو (اختياري)",
                 "opt_best": "أفضل جودة (تلقائي)",
                 "opt_mp3": "صوت فقط (MP3)",
                 "btn_dl": "تحميل",
