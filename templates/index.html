@@ -28,7 +28,7 @@
             overflow-x: hidden;
         }
 
-        /* --- بەشی پێشەکی گڵۆپ (Intro Overlay) --- */
+        /* --- بەشی پێشەکی گڵۆپ --- */
         #intro-overlay {
             position: fixed;
             top: 0;
@@ -128,6 +128,7 @@
             color: var(--text-muted);
             min-height: 35px;
             text-align: center;
+            padding: 0 15px;
         }
 
         .fade-out-up {
@@ -136,7 +137,7 @@
             transform: translateY(-100vh);
         }
 
-        /* --- ناوەڕۆکی بەشەکان --- */
+        /* --- ناوەڕۆک --- */
         .main-content {
             opacity: 0;
             transform: translateY(30px);
@@ -153,7 +154,7 @@
 
         header {
             width: 100%;
-            padding: 15px 8%;
+            padding: 15px 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -175,18 +176,20 @@
             color: var(--text-muted);
             text-decoration: none;
             font-weight: 600;
-            padding: 8px 16px;
+            padding: 8px 14px;
             border-radius: 12px;
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
+            white-space: nowrap;
         }
 
         nav a svg {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
             transition: transform 0.2s ease;
         }
 
@@ -209,31 +212,32 @@
             background: #1e293b;
             color: var(--text);
             border: 1px solid var(--border);
-            padding: 6px 12px;
+            padding: 6px 10px;
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
             outline: none;
+            font-size: 0.85rem;
         }
 
         .hero {
             max-width: 900px;
             margin: auto;
             text-align: center;
-            padding: 60px 20px;
+            padding: 50px 20px;
             width: 100%;
         }
         .hero h1 {
-            font-size: 2.8rem;
+            font-size: 2.5rem;
             font-weight: 800;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             background: linear-gradient(135deg, #fff 30%, #a5b4fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .hero p { color: var(--text-muted); font-size: 1.2rem; margin-bottom: 50px; }
+        .hero p { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 40px; }
 
-        /* --- ستایلی کارتەکان بۆردەر و glow --- */
+        /* --- کارتەکان --- */
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -244,27 +248,26 @@
         .card {
             background: var(--card-bg);
             backdrop-filter: blur(10px);
-            padding: 30px 20px;
+            padding: 28px 20px;
             border-radius: 18px;
             border: 1px solid var(--border);
             text-decoration: none;
             color: var(--text);
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 700;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 14px;
+            gap: 12px;
             opacity: 0;
             transform: translateY(40px) rotateX(-20deg);
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
         }
 
         .card svg {
-            width: 42px;
-            height: 42px;
+            width: 40px;
+            height: 40px;
             transition: transform 0.3s ease, fill 0.3s ease;
         }
 
@@ -278,52 +281,72 @@
         .main-content.visible .card:nth-child(3) { transition-delay: 0.4s; }
         .main-content.visible .card:nth-child(4) { transition-delay: 0.55s; }
 
-        /* Hover Styles بۆ کارتەکان بە بۆردەری تایبەت */
-        .card.yt:hover {
-            border-color: #ff0000;
-            box-shadow: 0 10px 25px -5px rgba(255, 0, 0, 0.4);
-            transform: translateY(-8px) scale(1.03) !important;
-        }
+        .card.yt:hover { border-color: #ff0000; box-shadow: 0 10px 25px -5px rgba(255, 0, 0, 0.4); transform: translateY(-8px) scale(1.03) !important; }
         .card.yt svg { fill: #ff0000; }
 
-        .card.fb:hover {
-            border-color: #1877f2;
-            box-shadow: 0 10px 25px -5px rgba(24, 119, 242, 0.4);
-            transform: translateY(-8px) scale(1.03) !important;
-        }
+        .card.fb:hover { border-color: #1877f2; box-shadow: 0 10px 25px -5px rgba(24, 119, 242, 0.4); transform: translateY(-8px) scale(1.03) !important; }
         .card.fb svg { fill: #1877f2; }
 
-        .card.ig:hover {
-            border-color: #e4405f;
-            box-shadow: 0 10px 25px -5px rgba(228, 64, 95, 0.4);
-            transform: translateY(-8px) scale(1.03) !important;
-        }
+        .card.ig:hover { border-color: #e4405f; box-shadow: 0 10px 25px -5px rgba(228, 64, 95, 0.4); transform: translateY(-8px) scale(1.03) !important; }
         .card.ig svg { fill: #e4405f; }
 
-        .card.tt:hover {
-            border-color: #00f2fe;
-            box-shadow: 0 10px 25px -5px rgba(0, 242, 254, 0.4);
-            transform: translateY(-8px) scale(1.03) !important;
-        }
+        .card.tt:hover { border-color: #00f2fe; box-shadow: 0 10px 25px -5px rgba(0, 242, 254, 0.4); transform: translateY(-8px) scale(1.03) !important; }
         .card.tt svg { fill: #00f2fe; }
 
-        .card:hover svg {
-            transform: scale(1.15);
-        }
+        .card:hover svg { transform: scale(1.15); }
 
-        /* خۆگونجاندن بۆ مۆبایل */
-        @media (max-width: 600px) {
-            header { padding: 12px 4%; flex-direction: column; gap: 12px; }
-            nav { width: 100%; justify-content: space-around; }
-            nav a span { display: none; }
-            nav a { padding: 10px 14px; border-radius: 50%; }
-            nav a svg { width: 22px; height: 22px; }
+        /* --- خۆگونجاندنی گشتگیر بۆ مۆبایل --- */
+        @media (max-width: 768px) {
+            header {
+                padding: 10px 12px;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            nav {
+                width: 100%;
+                justify-content: space-between;
+                order: 2;
+                overflow-x: auto;
+                padding-bottom: 4px;
+            }
+            .lang-select {
+                order: 1;
+                margin-left: auto;
+            }
+            [dir="rtl"] .lang-select {
+                margin-left: 0;
+                margin-right: auto;
+            }
+            nav a {
+                padding: 8px 10px;
+                font-size: 0.8rem;
+                gap: 5px;
+            }
+            nav a svg {
+                width: 16px;
+                height: 16px;
+            }
             .hero { padding: 30px 15px; }
-            .hero h1 { font-size: 1.8rem; margin-bottom: 12px; }
-            .hero p { font-size: 0.95rem; margin-bottom: 30px; }
-            .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-            .card { padding: 20px 10px; font-size: 0.95rem; }
-            .card svg { width: 32px; height: 32px; }
+            .hero h1 { font-size: 1.75rem; margin-bottom: 10px; }
+            .hero p { font-size: 0.95rem; margin-bottom: 25px; }
+            .cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            .card {
+                padding: 20px 10px;
+                font-size: 0.9rem;
+                border-radius: 14px;
+            }
+            .card svg {
+                width: 32px;
+                height: 32px;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            nav a span { display: inline-block; }
+            .cards-grid { grid-template-columns: repeat(2, 1fr); }
         }
 
         .f2ter {
@@ -468,7 +491,6 @@
             if (selectElem) selectElem.value = lang;
         }
 
-        /* --- 1. دەقی تایپڕایته‌ر --- */
         const messages = [
             "Click the bulb or chain to enter...",
             "انقر على المصباح أو السلسلة للدخول...",
@@ -502,7 +524,6 @@
             setTimeout(typeLoop, typeSpeed);
         }
 
-        /* --- 2. دەنگی کلیک --- */
         function playSwitchSound() {
             try {
                 const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -528,7 +549,6 @@
             }
         }
 
-        /* --- 3. لۆجیکی گڵۆپەکە --- */
         const bulbBtn = document.getElementById('bulb-btn');
         const pullChain = document.getElementById('pull-chain');
         const introOverlay = document.getElementById('intro-overlay');
