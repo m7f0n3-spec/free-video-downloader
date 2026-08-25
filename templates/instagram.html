@@ -94,13 +94,11 @@
             flex-shrink: 0;
         }
 
-        /* تۆخکردنی دەق و ئایکۆن کاتێک دەچیتە سەری (Hover) */
         nav a:hover {
             color: #ffffff;
             background: rgba(255, 255, 255, 0.08);
         }
 
-        /* ستایلی چاککراو بە گڕادیێنتی ئینستاگرام بۆ پەڕەی چالاک */
         nav a.active {
             color: #ffffff !important;
             background: var(--gradient-ig);
@@ -156,49 +154,67 @@
             background: var(--gradient-ig);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
         }
 
+        /* --- بەشی چاککراوی Input Group --- */
         .input-group {
-            display: flex;
-            gap: 8px;
-            margin: 20px 0 15px 0;
             position: relative;
+            width: 100%;
+            margin: 20px 0 15px 0;
         }
 
         input[type="text"], input[type="number"] {
-            flex: 1;
-            padding: 14px 18px;
+            width: 100%;
             border: 1px solid var(--border);
             background: rgba(15, 23, 42, 0.6);
             color: #fff;
-            border-radius: 12px;
+            border-radius: 14px;
             outline: none;
             font-size: 1rem;
         }
+
+        .input-group input[type="text"] {
+            padding: 16px 95px 16px 18px; /* Padding-right بۆ ڕێگریکردن لە چوونەژێری دەقەکە */
+        }
+
         input[type="text"]:focus, input[type="number"]:focus {
             border-color: var(--primary);
             box-shadow: 0 0 18px var(--primary-glow);
         }
 
         .btn-paste {
-            padding: 10px 16px;
-            background: rgba(255, 255, 255, 0.08);
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 9px 18px;
+            background: rgba(255, 255, 255, 0.1);
             color: #ffffff;
-            border: 1px solid var(--border);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             cursor: pointer;
             font-weight: 600;
             font-size: 0.85rem;
             white-space: nowrap;
-            flex-shrink: 0;
-            transition: all 0.25s ease;
+            transition: all 0.2s ease;
+            z-index: 2;
         }
 
         .btn-paste:hover { 
             background: var(--primary);
             border-color: var(--primary);
-            box-shadow: 0 0 15px var(--glow);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        /* گونجاندن بۆ زمانی کوردی و عەرەبی (RTL) */
+        [dir="rtl"] .input-group input[type="text"] {
+            padding: 16px 18px 16px 95px;
+        }
+
+        [dir="rtl"] .btn-paste {
+            right: auto;
+            left: 8px;
         }
 
         .trim-box {
@@ -214,7 +230,7 @@
         }
 
         .trim-box > div { flex: 1 1 0% !important; min-width: 0 !important; }
-        .trim-box input { width: 100% !important; box-sizing: border-box !important; }
+        .trim-box input { width: 100% !important; box-sizing: border-box !important; padding: 12px; }
         .trim-box label { font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 5px; font-weight: 600; }
 
         .options-group { display: flex; gap: 10px; margin-bottom: 20px; }
@@ -658,8 +674,8 @@
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
     <footer class="f2ter">
-    © 2026 Professional Web Video Downloader<br>
-    Powered by A. Coder <a href="https://shorturl.at/AmZ4P" class="fv">FV-Downloader</a>
-</footer>
+        © 2026 Professional Web Video Downloader<br>
+        Powered by A. Coder <a href="https://shorturl.at/AmZ4P" class="fv">FV-Downloader</a>
+    </footer>
 </body>
 </html>
