@@ -34,7 +34,6 @@
             position: relative;
         }
 
-        /* --- ئەنیمەیشنی خولانەوەی پاشبنەما --- */
         body::before {
             content: '';
             position: fixed;
@@ -55,12 +54,13 @@
 
         header {
             width: 100%;
-            padding: 15px 8%;
+            padding: 12px 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
@@ -71,35 +71,39 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
         nav a {
             color: var(--text-muted);
             text-decoration: none;
             font-weight: 600;
-            padding: 8px 16px;
+            padding: 8px 14px;
             border-radius: 12px;
-            display: inline-flex;
+            display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
+            gap: 6px;
+            font-size: 0.9rem;
+            white-space: nowrap;
         }
 
         nav a svg {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             fill: currentColor;
             flex-shrink: 0;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        /* تۆخکردنی دەق و ئایکۆن کاتێک دەچیتە سەری (Hover) */
         nav a:hover {
             color: #ffffff;
             background: rgba(255, 255, 255, 0.08);
         }
 
-        /* ستایلی چاککراو و گەشاوە بۆ پەڕەی چالاک */
+        nav a:hover svg {
+            transform: translateY(-2px) scale(1.15);
+        }
+
         nav a.active {
             color: #ffffff !important;
             background: linear-gradient(135deg, var(--primary), var(--primary-hover));
@@ -116,21 +120,22 @@
             background: #1e293b;
             color: var(--text);
             border: 1px solid var(--border);
-            padding: 6px 12px;
-            border-radius: 8px;
+            padding: 8px 12px;
+            border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
             outline: none;
+            font-size: 0.85rem;
         }
 
-        /* --- ئەنیمەیشنی سەركەوتنی Container بە Glow --- */
         .container {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
-            padding: 35px;
+            -webkit-backdrop-filter: blur(20px);
+            padding: 30px 24px;
             border-radius: 24px;
             border: 1px solid var(--border);
-            margin-top: 50px;
+            margin-top: 30px;
             width: 90%;
             max-width: 550px;
             text-align: center;
@@ -155,130 +160,153 @@
             background: linear-gradient(135deg, #ffffff, #60a5fa);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
         }
 
+        /* --- بەرگرتن لە دەرچوونی بەتنی Paste --- */
         .input-group {
             display: flex;
-            gap: 8px;
-            margin: 20px 0 15px 0;
-            position: relative;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 4px;
+            margin-bottom: 15px;
+            width: 100%;
         }
 
-        input[type="text"], input[type="number"] {
-            flex: 1;
-            padding: 14px 18px;
-            border: 1px solid var(--border);
-            background: rgba(15, 23, 42, 0.6);
-            color: #fff;
-            border-radius: 12px;
-            outline: none;
-            font-size: 1rem;
-        }
-        input[type="text"]:focus, input[type="number"]:focus {
+        .input-group:focus-within {
             border-color: var(--primary);
             box-shadow: 0 0 18px var(--primary-glow);
         }
 
-        /* --- دوگمەی Paste بە ڕەنگی فەیسبووک --- */
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 14px;
+            border: none;
+            background: transparent;
+            color: #fff;
+            outline: none;
+            font-size: 0.95rem;
+            min-width: 0;
+        }
+
         .btn-paste {
-            padding: 0 18px;
+            padding: 10px 16px;
             background: rgba(24, 119, 242, 0.12);
             color: #60a5fa;
             border: 1px solid rgba(24, 119, 242, 0.3);
-            border-radius: 12px;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
+
         .btn-paste:hover {
             background: var(--primary);
             color: #fff;
             border-color: var(--primary);
             box-shadow: 0 0 15px var(--primary-glow);
-            transform: translateY(-2px);
         }
 
         .trim-box {
-            display: flex !important;
-            gap: 12px !important;
-            width: 100% !important;
-            box-sizing: border-box !important;
-            padding: 14px !important;
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
             background: rgba(15, 23, 42, 0.4);
             border-radius: 14px;
             border: 1px dashed var(--border);
             margin-bottom: 15px;
         }
 
-        .trim-box > div { flex: 1 1 0% !important; min-width: 0 !important; }
-        .trim-box input { width: 100% !important; box-sizing: border-box !important; }
-        .trim-box label { font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 5px; font-weight: 600; }
+        .trim-box > div { flex: 1; min-width: 0; }
 
-        .options-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.7);
+            color: #fff;
+            border-radius: 10px;
+            outline: none;
+            font-size: 0.9rem;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        .trim-box label { font-size: 0.78rem; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600; }
+
+        .options-group { display: flex; gap: 12px; margin-bottom: 20px; }
 
         select.quality-select {
             width: 100%;
             padding: 12px;
-            background: #1e293b;
+            background: rgba(15, 23, 42, 0.7);
             color: #fff;
             border: 1px solid var(--border);
             border-radius: 12px;
             outline: none;
             font-weight: 600;
             cursor: pointer;
+            font-size: 0.9rem;
         }
 
-        /* --- دوگمەی سەرەکی داونلۆدی فەیسبووک --- */
         button.btn-main {
             width: 100%;
-            padding: 15px;
+            padding: 14px;
             background: linear-gradient(135deg, #1877f2, #0056b3);
             color: white;
             border: none;
-            border-radius: 14px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: 700;
-            font-size: 1.05rem;
+            font-size: 1rem;
             box-shadow: 0 8px 25px -4px var(--primary-glow);
             position: relative;
             overflow: hidden;
         }
+
         button.btn-main:hover {
-            transform: translateY(-3px);
+            transform: translateY(-2px);
             box-shadow: 0 12px 30px -2px rgba(24, 119, 242, 0.6);
             background: linear-gradient(135deg, #1b82ff, #0d65d9);
         }
 
-        /* --- پێشاندانی وێنە و ناوی ڤیدیۆ بە ئەنیمەیشن --- */
         .preview-card {
             display: none;
             background: rgba(15, 23, 42, 0.85);
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 15px;
+            padding: 16px;
             margin-top: 20px;
             text-align: left;
             animation: fadeIn 0.5s ease forwards;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
         [dir="rtl"] .preview-card { text-align: right; }
 
         .preview-card img {
             width: 100%;
             border-radius: 10px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             object-fit: cover;
         }
 
-        .preview-title { font-weight: 700; font-size: 1rem; margin-bottom: 6px; color: #fff; }
-        .preview-meta { color: var(--text-muted); font-size: 0.85rem; }
+        .preview-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; color: #fff; }
+        .preview-meta { color: var(--text-muted); font-size: 0.82rem; }
         
         .playlist-badge {
             display: inline-block;
@@ -291,7 +319,6 @@
             margin-top: 8px;
         }
 
-        /* --- پڕۆگرێس باری شلگێنی درەوشاوە --- */
         .progress-bar {
             width: 100%;
             background-color: rgba(15, 23, 42, 0.8);
@@ -302,29 +329,48 @@
             border: 1px solid var(--border);
             padding: 3px;
         }
+
         .progress {
             width: 0%;
-            height: 22px;
+            height: 18px;
             background: linear-gradient(90deg, #1877f2, #10b981);
-            border-radius: 9px;
+            border-radius: 6px;
             text-align: center;
             color: white;
-            line-height: 22px;
-            font-size: 12px;
+            line-height: 18px;
+            font-size: 10px;
             font-weight: bold;
             box-shadow: 0 0 15px rgba(24, 119, 242, 0.5);
             transition: width 0.3s ease;
         }
 
-        @media (max-width: 600px) {
-            header { padding: 12px 4%; flex-direction: column; gap: 12px; }
-            nav { justify-content: center; gap: 5px; flex-wrap: wrap; }
-            nav a { padding: 6px 10px; font-size: 0.85rem; }
-            .container { margin-top: 20px; padding: 20px 15px; width: 95%; }
+        @media (max-width: 640px) {
+            header {
+                padding: 10px 3%;
+                flex-direction: column;
+                gap: 10px;
+            }
+            nav {
+                width: 100%;
+                justify-content: center;
+                gap: 4px;
+            }
+            nav a {
+                padding: 8px 10px;
+                font-size: 0.8rem;
+            }
+            nav a span {
+                display: inline-block;
+            }
+            .container {
+                margin-top: 15px;
+                padding: 20px 14px;
+                width: 95%;
+            }
             .trim-box { flex-direction: column; gap: 8px; }
         }
 
-        .f2ter { text-align: center; margin-top: auto; padding: 25px; font-size: 0.8rem; color: var(--text-muted); }
+        .f2ter { text-align: center; margin-top: auto; padding: 20px 0; font-size: 0.8rem; color: var(--text-muted); }
         .fv { color: var(--primary); text-decoration: none; font-weight: 600; }
     </style>
 </head>
@@ -480,15 +526,15 @@
             
             document.querySelectorAll('[data-i18n]').forEach(elem => {
                 const key = elem.getAttribute('data-i18n');
-                 if (translations[lang] && translations[lang][key]) {
+                if (translations[lang] && translations[lang][key]) {
                     const span = elem.querySelector('span');
                     if (span) {
                         span.innerText = translations[lang][key];
                     } else {
                         elem.innerText = translations[lang][key];
                     }
-                 }
-                });
+                }
+            });
 
             document.querySelectorAll('[data-i18n-ph]').forEach(elem => {
                 const key = elem.getAttribute('data-i18n-ph');
@@ -659,7 +705,7 @@
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     
     <footer class="f2ter">
-        © 2026 Professional Web Video Downloader<br>Powered by A. Coder<a href="https://shorturl.at/wrmY1" class="fv"> FV-Downloader</a>
+        © 2026 Professional Web Video Downloader<br>Powered by A. Coder <a href="https://shorturl.at/wrmY1" class="fv">FV-Downloader</a>
     </footer>
 </body>
 </html>
