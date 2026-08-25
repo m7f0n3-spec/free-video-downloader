@@ -170,6 +170,7 @@
             display: flex;
             gap: 8px;
             align-items: center;
+            flex-wrap: wrap; /* ڕێگەدان بە بەستەرەکان بۆ دابەزین بۆ ڕیزی نوێ */
         }
 
         nav a {
@@ -304,10 +305,10 @@
             }
             nav {
                 width: 100%;
-                justify-content: space-between;
+                justify-content: center;
                 order: 2;
-                overflow-x: auto;
-                padding-bottom: 4px;
+                flex-wrap: wrap;
+                gap: 6px;
             }
             .lang-select {
                 order: 1;
@@ -318,7 +319,7 @@
                 margin-right: auto;
             }
             nav a {
-                padding: 8px 10px;
+                padding: 6px 10px;
                 font-size: 0.8rem;
                 gap: 5px;
             }
