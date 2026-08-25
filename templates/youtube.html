@@ -202,21 +202,32 @@
             box-shadow: 0 0 15px var(--glow);
         }
 
+        /* --- بەشی کەتکردنی ڤیدیۆ --- */
         .trim-box {
-            display: flex !important;
-            gap: 12px !important;
-            width: 100% !important;
-            box-sizing: border-box !important;
-            padding: 14px !important;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 14px;
             background: rgba(15, 23, 42, 0.5);
             border-radius: 14px;
             border: 1px dashed var(--border);
             margin-bottom: 20px;
         }
 
-        .trim-box > div {
-            flex: 1 1 0% !important;
-            min-width: 0 !important;
+        .trim-title {
+            width: 100%;
+            text-align: start;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 2px;
+        }
+
+        .trim-box > div:not(.trim-title) {
+            flex: 1;
+            min-width: 0;
         }
 
         .trim-box label { font-size: 0.82rem; color: var(--text-muted); display: block; margin-bottom: 6px; font-weight: 600; }
@@ -357,7 +368,7 @@
 
             .trim-box {
                 flex-direction: column;
-                gap: 10px !important;
+                gap: 10px;
             }
         }
 
@@ -419,6 +430,7 @@
         </div>
 
         <div class="trim-box">
+            <div class="trim-title" data-i18n="trim_title">Trim Video (Optional)</div>
             <div>
                 <label data-i18n="lbl_start">Start Time (Sec)</label>
                 <input type="number" id="startTime" placeholder="0" min="0">
@@ -461,6 +473,7 @@
                 "yt_title": "YouTube Downloader",
                 "input_ph": "Paste video link here...",
                 "btn_paste": "Paste",
+                "trim_title": "Trim Video (Optional)",
                 "opt_best": "Best Quality (Auto)",
                 "opt_mp3": "Audio Only (MP3)",
                 "btn_dl": "Download",
@@ -483,6 +496,7 @@
                 "yt_title": "داگرتنی ڤیدیۆی یووتیووب",
                 "input_ph": "لینکی ڤیدیۆکە لێرە دابنێ...",
                 "btn_paste": "پەیست",
+                "trim_title": "بڕینی ڤیدیۆ (ئارەزوومەندانە)",
                 "opt_best": "باشترین کوالێتی (ئۆتۆ)",
                 "opt_mp3": "تەنها دەنگ (MP3)",
                 "btn_dl": "داونلۆدکردن",
@@ -505,6 +519,7 @@
                 "yt_title": "تحميل فيديوهات يوتيوب",
                 "input_ph": "ألصق رابط الفيديو هنا...",
                 "btn_paste": "لصق",
+                "trim_title": "قص الفيديو (اختياري)",
                 "opt_best": "أفضل جودة (تلقائي)",
                 "opt_mp3": "صوت فقط (MP3)",
                 "btn_dl": "تحميل",

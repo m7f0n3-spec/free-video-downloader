@@ -163,7 +163,6 @@
             margin-bottom: 20px;
         }
 
-        /* --- بەرگرتن لە دەرچوونی بەتنی Paste --- */
         .input-group {
             display: flex;
             align-items: center;
@@ -211,6 +210,19 @@
             box-shadow: 0 0 15px var(--primary-glow);
         }
 
+        .trim-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #60a5fa;
+            text-align: left;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        [dir="rtl"] .trim-title { text-align: right; }
+
         .trim-box {
             display: flex;
             gap: 10px;
@@ -221,9 +233,10 @@
             border-radius: 14px;
             border: 1px dashed var(--border);
             margin-bottom: 15px;
+            flex-wrap: wrap;
         }
 
-        .trim-box > div { flex: 1; min-width: 0; }
+        .trim-box > div { flex: 1; min-width: 120px; }
 
         input[type="number"] {
             width: 100%;
@@ -414,6 +427,8 @@
             <button class="btn-paste" onclick="pasteFromClipboard()" data-i18n="btn_paste">Paste</button>
         </div>
 
+        <!-- بەشی بڕینی ڤیدیۆ / Trim Video -->
+        <div class="trim-title" data-i18n="trim_heading"> Trim Video (Optional)</div>
         <div class="trim-box">
             <div>
                 <label data-i18n="lbl_start">Start Time (Sec)</label>
@@ -445,7 +460,7 @@
             <div class="progress" id="progressBar">0%</div>
         </div>
     </div>
-    <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "05b9ef232b1d4b09a8ed1196e0b3c05f"}'></script>
+    
     <script>
         const translations = {
             en: {
@@ -457,6 +472,7 @@
                 "fb_title": "Facebook Downloader",
                 "input_ph": "Paste video link here...",
                 "btn_paste": "Paste",
+                "trim_heading": "✂️ Trim Video (Optional)",
                 "opt_best": "Best Quality (Auto)",
                 "opt_mp3": "Audio Only (MP3)",
                 "btn_dl": "Download",
@@ -479,6 +495,7 @@
                 "fb_title": "داگرتنی ڤیدیۆی فەیسبووک",
                 "input_ph": "لینکی ڤیدیۆکە لێرە دابنێ...",
                 "btn_paste": "پەیست",
+                "trim_heading": " بڕینی ڤیدیۆ (ئارەزوومەندانە)",
                 "opt_best": "باشترین کوالێتی (ئۆتۆ)",
                 "opt_mp3": "تەنها دەنگ (MP3)",
                 "btn_dl": "داونلۆدکردن",
@@ -501,6 +518,7 @@
                 "fb_title": "تحميل فيديوهات فيسبوك",
                 "input_ph": "ألصق رابط الفيديو هنا...",
                 "btn_paste": "لصق",
+                "trim_heading": "✂️ قص الفيديو (اختياري)",
                 "opt_best": "أفضل جودة (تلقائي)",
                 "opt_mp3": "صوت فقط (MP3)",
                 "btn_dl": "تحميل",
@@ -702,7 +720,6 @@
             changeLanguage(savedLang);
         });
     </script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     
     <footer class="f2ter">
         © 2026 Professional Web Video Downloader<br>Powered by A. Coder <a href="https://shorturl.at/AmZ4P" class="fv">FV-Downloader</a>

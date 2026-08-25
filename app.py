@@ -18,19 +18,19 @@ app = Flask(__name__)
 # --- وەرگرتنی کلیدی نهێنی بۆ پاراستنی لاپەڕەی ئەدمین ---
 ADMIN_SECRET_KEY = os.getenv('ADMIN_SECRET_KEY', 'mysecret123')
 
+# --- لیستی IPیە بلۆککراوەکان (IP Blacklist) ---
+BANNED_IPS = set(os.getenv('BANNED_IPS', '').split(',')) if os.getenv('BANNED_IPS') else set()
+
 # --- فەنکشنی تایبەت بە وەرگرتنی IPی ڕاستەقینەی بەکارهێنەر لە Cloudflare ---
 def get_client_ip():
-    # 1. وەرگرتنی IP ئەگەر لە پشت Cloudflare بێت
     cf_ip = request.headers.get('CF-Connecting-IP')
     if cf_ip:
         return cf_ip.strip()
     
-    # 2. ئەگەر لە پشت پڕۆکسی یان وێب سێرڤەری تر بێت (وەک Nginx/Railway)
     forwarded_for = request.headers.get('X-Forwarded-For')
     if forwarded_for:
         return forwarded_for.split(',')[0].strip()
     
-    # 3. لە باری ئاساییدا (مەحەلی / Local)
     return request.remote_addr or '127.0.0.1'
 
 limiter = Limiter(
@@ -40,30 +40,29 @@ limiter = Limiter(
     storage_uri="memory://"
 )
 
-# لیستی کاتی بۆ تۆمارکردنی IP سەردانکەران (تەنها بۆ نیشاندانی ئەدمین)
 visitor_logs = []
 
 @app.before_request
-def log_visitor_ip():
-    # تۆمارکردنی IP و کات و ئادڕێسی سەردانکراو
+def check_banned_ip_and_log():
     ip = get_client_ip()
-    path = request.path
     
-    # ڕێگری لە تۆمارکردنی فایلە ساتییەکان یان لاپەڕەی ئەدمین
+    # بلۆککردنی IP ئەگەر لە لیستی ڕەشدا بێت
+    if ip in BANNED_IPS:
+        return jsonify({"error": "Access denied. Your IP is blocked."}), 403
+
+    path = request.path
     if not path.startswith('/static') and not path.startswith('/admin'):
         visitor_logs.append({
             "ip": ip,
             "path": path,
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
         })
-        # هێشتنەوەی تەنها دواکەوتووترین 500 تۆمار بۆ پاراستنی بیرگە (Memory)
         if len(visitor_logs) > 500:
             visitor_logs.pop(0)
 
 R2_ACCOUNT_ID = os.getenv('R2_ACCOUNT_ID')
 R2_ACCESS_KEY_ID = os.getenv('R2_ACCESS_KEY_ID')
 R2_SECRET_ACCESS_KEY = os.getenv('R2_SECRET_ACCESS_KEY')
-
 R2_BUCKET_NAME = os.getenv('R2_BUCKET_NAME', 'my-media-downloader').strip().strip('/')
 
 PROXY_URL = os.getenv('PROXY_URL')
@@ -74,13 +73,11 @@ DOWNLOAD_DIR = os.path.join(os.path.dirname(__file__), 'downloads')
 if not os.path.exists(DOWNLOAD_DIR):
     os.makedirs(DOWNLOAD_DIR)
 
-# --- پرۆسەی خاوێنکردنەوەی ئۆتۆماتیکی فایلە کۆنەکان لە پاشبنەمادا ---
 def auto_cleanup_downloads_folder():
-    """هەر ٣٠ خولەک جارێک ئەو فایلانەی تەمەنیان لە ٣٠ خولەک زیاترە دەسڕێتەوە"""
     while True:
         try:
             now = time.time()
-            max_age_seconds = 30 * 60  # ٣٠ خولەک
+            max_age_seconds = 30 * 60
             if os.path.exists(DOWNLOAD_DIR):
                 for filename in os.listdir(DOWNLOAD_DIR):
                     file_path = os.path.join(DOWNLOAD_DIR, filename)
@@ -107,9 +104,12 @@ if R2_ACCOUNT_ID and R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY:
         region_name='auto'
     )
 
-def sanitize_filename(title):
+# --- کورتکردنەوە و خاوێنکردنەوەی ناوی فایلەکان (بەرزترین حد ٦٠ پیت) ---
+def sanitize_filename(title, max_length=60):
     clean_title = re.sub(r'[^\w\s-]', '', title)
     clean_title = re.sub(r'\s+', '_', clean_title).strip('_')
+    if len(clean_title) > max_length:
+        clean_title = clean_title[:max_length].rstrip('_')
     return clean_title if clean_title else 'video'
 
 COOKIE_PATH = os.path.join(os.path.dirname(__file__), 'cookies.txt')
@@ -138,10 +138,7 @@ def fetch_po_token():
 
 def get_base_ydl_opts():
     yt_client_config = ['tv', 'android', 'ios', 'mweb']
-    
-    yt_extractor_args = {
-        'player_client': yt_client_config
-    }
+    yt_extractor_args = {'player_client': yt_client_config}
     
     current_po_token = fetch_po_token()
     if current_po_token:
@@ -163,10 +160,8 @@ def get_base_ydl_opts():
     
     if os.path.exists(COOKIE_PATH):
         opts['cookiefile'] = COOKIE_PATH
-        
     if PROXY_URL:
         opts['proxy'] = PROXY_URL
-    
     return opts
 
 progress_queues = {}
@@ -191,7 +186,6 @@ def instagram():
 def tiktok():
     return render_template('tiktok.html')
 
-# --- ڕووتی تایبەت بە ئەدمین بۆ بینینی IP پارێزراو بە Key ---
 @app.route('/admin/ips')
 def view_admin_ips():
     key = request.args.get('key')
@@ -200,8 +194,21 @@ def view_admin_ips():
 
     return jsonify({
         "total_requests": len(visitor_logs),
+        "banned_ips": list(BANNED_IPS),
         "logs": visitor_logs
     })
+
+# ڕووت بۆ بلۆککردنی IPی نوێ لە ڕێگەی ئەدمینەوە
+@app.route('/admin/ban', methods=['POST'])
+def ban_ip():
+    data = request.json or {}
+    key = data.get('key')
+    ip_to_ban = data.get('ip')
+    if key != ADMIN_SECRET_KEY or not ip_to_ban:
+        return jsonify({"error": "Unauthorized or missing IP"}), 403
+    
+    BANNED_IPS.add(ip_to_ban.strip())
+    return jsonify({"success": True, "banned": ip_to_ban})
 
 @app.route('/downloads/<path:filename>')
 def serve_downloaded_file(filename):
@@ -244,6 +251,15 @@ def get_video_info():
             is_playlist = 'entries' in info
             playlist_count = len(info.get('entries', [])) if is_playlist else 0
 
+            # هەژمارکردنی کاتی ڤیدیۆ (Duration)
+            duration_sec = info.get('duration')
+            if duration_sec:
+                mins, secs = divmod(int(duration_sec), 60)
+                hrs, mins = divmod(mins, 60)
+                duration_str = f"{hrs:02d}:{mins:02d}:{secs:02d}" if hrs else f"{mins:02d}:{secs:02d}"
+            else:
+                duration_str = info.get('duration_string', 'N/A')
+
             formats_available = []
             if not is_playlist and 'formats' in info:
                 seen_heights = set()
@@ -264,7 +280,7 @@ def get_video_info():
             return jsonify({
                 'title': info.get('title', 'Media'),
                 'thumbnail': info.get('thumbnail', '') if not is_playlist else (info['entries'][0].get('thumbnail') if info['entries'] else ''),
-                'duration': info.get('duration_string', 'N/A') if not is_playlist else 'Playlist',
+                'duration': duration_str,
                 'uploader': info.get('uploader', info.get('extractor_key', 'Unknown')),
                 'qualities': formats_available,
                 'is_playlist': is_playlist,
