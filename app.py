@@ -15,6 +15,9 @@ from flask_limiter import Limiter
 
 app = Flask(__name__)
 
+# --- وەرگرتنی کلیدی نهێنی بۆ پاراستنی لاپەڕەی ئەدمین ---
+ADMIN_SECRET_KEY = os.getenv('ADMIN_SECRET_KEY', 'mysecret123')
+
 # --- فەنکشنی تایبەت بە وەرگرتنی IPی ڕاستەقینەی بەکارهێنەر لە Cloudflare ---
 def get_client_ip():
     # 1. وەرگرتنی IP ئەگەر لە پشت Cloudflare بێت
@@ -188,10 +191,13 @@ def instagram():
 def tiktok():
     return render_template('tiktok.html')
 
-# --- ڕووتی تایبەت بە ئەدمین بۆ بینینی IP زەردەشتکاران ---
+# --- ڕووتی تایبەت بە ئەدمین بۆ بینینی IP پارێزراو بە Key ---
 @app.route('/admin/ips')
 def view_admin_ips():
-    # دەتوانیت لێرەدا پشکنینی سێشن یان تێپەڕەواشەی سەرەکی بکەیت
+    key = request.args.get('key')
+    if key != ADMIN_SECRET_KEY:
+        return jsonify({"error": "Unauthorized"}), 403
+
     return jsonify({
         "total_requests": len(visitor_logs),
         "logs": visitor_logs
