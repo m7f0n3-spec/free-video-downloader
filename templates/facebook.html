@@ -14,11 +14,28 @@
             --primary-hover: #0d65d9;
             --primary-glow: rgba(24, 119, 242, 0.4);
             --bg: #070a12;
+            --bg-gradient: linear-gradient(-45deg, #070a12, #0d1b2a, #1877f2, #002244, #1877f2);
             /* Glassmorphism Variables */
             --card-bg: rgba(15, 23, 42, 0.55);
             --border: rgba(255, 255, 255, 0.12);
             --text: #f8fafc;
             --text-muted: #94a3b8;
+            --header-bg: rgba(11, 15, 25, 0.45);
+            --input-bg: rgba(11, 15, 25, 0.5);
+            --heading-gradient: linear-gradient(135deg, #ffffff 30%, #60a5fa);
+        }
+
+        /* Light Theme Variables */
+        [data-theme="light"] {
+            --bg: #f0f2f5;
+            --bg-gradient: linear-gradient(-45deg, #e4e6eb, #f0f2f5, #e7f3ff, #ffffff);
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --border: rgba(0, 0, 0, 0.1);
+            --text: #050505;
+            --text-muted: #65676b;
+            --header-bg: rgba(255, 255, 255, 0.65);
+            --input-bg: rgba(240, 242, 245, 0.8);
+            --heading-gradient: linear-gradient(135deg, #1877f2 30%, #0d65d9);
         }
 
         /* لێرە transition لەسەر * لادراوە بۆ ئەوەی ڕێگە لە ئەنیمەیشنی background نەگرێت */
@@ -26,7 +43,7 @@
         
         /* Animated Gradient Background - تایبەت بە ڕەنگەکانی فەیسبووک */
         body {
-            background: linear-gradient(-45deg, #070a12, #0d1b2a, #1877f2, #002244, #1877f2);
+            background: var(--bg-gradient);
             background-size: 400% 400% !important;
             animation: gradientBG 10s ease infinite !important;
             color: var(--text);
@@ -59,7 +76,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(11, 15, 25, 0.45);
+            background: var(--header-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border);
@@ -67,6 +84,42 @@
             top: 0;
             z-index: 100;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle-btn {
+            background: rgba(30, 41, 59, 0.5);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="light"] .theme-toggle-btn {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .theme-toggle-btn:hover {
+            transform: scale(1.05);
+            border-color: var(--primary);
+        }
+
+        .theme-toggle-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
         }
 
         nav {
@@ -99,8 +152,12 @@
         }
 
         nav a:hover {
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.08);
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        [data-theme="light"] nav a:hover {
+            background: rgba(0, 0, 0, 0.05);
         }
 
         nav a:hover svg {
@@ -133,6 +190,10 @@
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        [data-theme="light"] .lang-select {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
         /* Glassmorphic Main Container */
         .container {
             background: var(--card-bg);
@@ -145,7 +206,7 @@
             width: 90%;
             max-width: 560px;
             text-align: center;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(24, 119, 242, 0.15);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(24, 119, 242, 0.15);
             animation: floatUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             position: relative;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -153,7 +214,7 @@
 
         .container:hover {
             border-color: rgba(24, 119, 242, 0.4);
-            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.7), 0 0 50px rgba(24, 119, 242, 0.25);
+            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.4), 0 0 50px rgba(24, 119, 242, 0.25);
         }
 
         @keyframes floatUp {
@@ -164,7 +225,7 @@
         .container h2 {
             font-size: 2rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #ffffff 30%, #60a5fa);
+            background: var(--heading-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 24px;
@@ -174,7 +235,7 @@
         .input-group {
             display: flex;
             align-items: center;
-            background: rgba(11, 15, 25, 0.5);
+            background: var(--input-bg);
             border: 1px solid var(--border);
             border-radius: 16px;
             padding: 6px;
@@ -193,7 +254,7 @@
             padding: 12px 14px;
             border: none;
             background: transparent;
-            color: #fff;
+            color: var(--text);
             outline: none;
             font-size: 0.95rem;
             min-width: 0;
@@ -203,7 +264,7 @@
         .btn-paste {
             padding: 10px 18px;
             background: rgba(24, 119, 242, 0.15);
-            color: #60a5fa;
+            color: var(--primary);
             border: 1px solid rgba(24, 119, 242, 0.3);
             border-radius: 12px;
             cursor: pointer;
@@ -224,7 +285,7 @@
         .trim-title {
             font-size: 0.85rem;
             font-weight: 700;
-            color: #60a5fa;
+            color: var(--primary);
             text-align: left;
             margin-bottom: 8px;
             display: flex;
@@ -240,7 +301,7 @@
             width: 100%;
             box-sizing: border-box;
             padding: 14px;
-            background: rgba(11, 15, 25, 0.3);
+            background: var(--input-bg);
             border-radius: 16px;
             border: 1px dashed var(--border);
             margin-bottom: 18px;
@@ -253,8 +314,8 @@
             width: 100%;
             padding: 10px 12px;
             border: 1px solid var(--border);
-            background: rgba(15, 23, 42, 0.6);
-            color: #fff;
+            background: var(--card-bg);
+            color: var(--text);
             border-radius: 10px;
             outline: none;
             font-size: 0.9rem;
@@ -273,8 +334,8 @@
         select.quality-select {
             width: 100%;
             padding: 12px;
-            background: rgba(15, 23, 42, 0.6);
-            color: #fff;
+            background: var(--card-bg);
+            color: var(--text);
             border: 1px solid var(--border);
             border-radius: 14px;
             outline: none;
@@ -315,7 +376,7 @@
         /* --- Skeleton Loader --- */
         .skeleton {
             display: none;
-            background: rgba(15, 23, 42, 0.4);
+            background: var(--input-bg);
             border: 1px solid var(--border);
             border-radius: 18px;
             padding: 16px;
@@ -347,14 +408,14 @@
 
         .preview-card {
             display: none;
-            background: rgba(15, 23, 42, 0.6);
+            background: var(--input-bg);
             border: 1px solid var(--border);
             border-radius: 18px;
             padding: 18px;
             margin-top: 20px;
             text-align: left;
             animation: fadeIn 0.5s ease forwards;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             backdrop-filter: blur(10px);
         }
 
@@ -373,7 +434,7 @@
             border: 1px solid var(--border);
         }
 
-        .preview-title { font-weight: 700; font-size: 0.98rem; margin-bottom: 6px; color: #fff; }
+        .preview-title { font-weight: 700; font-size: 0.98rem; margin-bottom: 6px; color: var(--text); }
         .preview-meta { color: var(--text-muted); font-size: 0.84rem; }
         
         .playlist-badge {
@@ -389,7 +450,7 @@
 
         .progress-bar {
             width: 100%;
-            background-color: rgba(11, 15, 25, 0.8);
+            background-color: var(--input-bg);
             border-radius: 14px;
             margin-top: 20px;
             display: none;
@@ -473,11 +534,20 @@
                 <span>TikTok</span>
             </a>
         </nav>
-        <select id="language-select" class="lang-select" onchange="changeLanguage(this.value)">
-            <option value="en">English</option>
-            <option value="ku">کوردی</option>
-            <option value="ar">العربية</option>
-        </select>
+        
+        <div class="header-controls">
+            <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode" id="themeBtn">
+                <!-- Sun Icon -->
+                <svg id="sunIcon" style="display: none;" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>
+                <!-- Moon Icon -->
+                <svg id="moonIcon" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 4.97 4.03 9 9 9 4.14 0 7.63-2.8 8.65-6.66-2.07.67-4.32.25-6.02-1.12-1.7-1.37-2.52-3.6-2.12-5.75C12.87 5.09 10.55 3 12 3z"/></svg>
+            </button>
+            <select id="language-select" class="lang-select" onchange="changeLanguage(this.value)">
+                <option value="en">English</option>
+                <option value="ku">کوردی</option>
+                <option value="ar">العربية</option>
+            </select>
+        </div>
     </header>
 
     <div class="container" id="mainContainer">
@@ -632,6 +702,29 @@
             if (selectElem) selectElem.value = lang;
         }
 
+        /* --- Theme Toggle Functionality --- */
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            applyTheme(newTheme);
+        }
+
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('app_theme', theme);
+            
+            const sunIcon = document.getElementById('sunIcon');
+            const moonIcon = document.getElementById('moonIcon');
+
+            if (theme === 'light') {
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+            } else {
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+            }
+        }
+
         async function pasteFromClipboard() {
             const inputField = document.getElementById('videoUrl');
 
@@ -747,7 +840,7 @@
             setTimeout(() => {
                 card.style.transform = 'scale(1)';
                 card.style.borderColor = 'var(--border)';
-                card.style.boxShadow = '0 25px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(24, 119, 242, 0.15)';
+                card.style.boxShadow = '0 25px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(24, 119, 242, 0.15)';
             }, 1500);
         }
 
@@ -837,6 +930,9 @@
         document.addEventListener('DOMContentLoaded', () => {
             const savedLang = localStorage.getItem('app_lang') || 'en';
             changeLanguage(savedLang);
+
+            const savedTheme = localStorage.getItem('app_theme') || 'dark';
+            applyTheme(savedTheme);
         });
     </script>
     

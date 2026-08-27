@@ -18,13 +18,43 @@
             --text-muted: #94a3b8;
         }
 
+        /* Light Theme Variables */
+        [data-theme="light"] {
+            --bg: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --border: rgba(0, 0, 0, 0.1);
+            --text: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        [data-theme="light"] body {
+            background: linear-gradient(-45deg, #f8fafc, #e2e8f0, #cbd5e1, #f8fafc) !important;
+        }
+
+        [data-theme="light"] header {
+            background: rgba(255, 255, 255, 0.7) !important;
+        }
+
+        [data-theme="light"] .container {
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1), 0 0 35px rgba(225, 48, 108, 0.1) !important;
+        }
+
+        [data-theme="light"] input[type="text"],
+        [data-theme="light"] input[type="number"],
+        [data-theme="light"] select.quality-select,
+        [data-theme="light"] .lang-select,
+        [data-theme="light"] .trim-box {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: var(--text) !important;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
         
         /* Animated Gradient Background */
         body {
             background: linear-gradient(-45deg, #0b0f19, #2b1055, #751555, #0b0f19);
             background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            animation: gradientBG 10s ease infinite !important;
             color: var(--text);
             font-family: 'Plus Jakarta Sans', 'Vazirmatn', sans-serif;
             min-height: 100vh;
@@ -186,7 +216,7 @@
             padding: 12px 14px;
             border: none;
             background: transparent;
-            color: #fff;
+            color: var(--text);
             outline: none;
             font-size: 0.95rem;
             min-width: 0;
@@ -273,7 +303,7 @@
             padding: 10px;
             border: 1px solid var(--border);
             background: rgba(15, 23, 42, 0.6);
-            color: #fff;
+            color: var(--text);
             border-radius: 10px;
             outline: none;
             font-size: 0.9rem;
@@ -292,7 +322,7 @@
             width: 100%;
             padding: 12px;
             background: rgba(15, 23, 42, 0.6);
-            color: #fff;
+            color: var(--text);
             border: 1px solid var(--border);
             border-radius: 12px;
             outline: none;
@@ -376,7 +406,7 @@
             object-fit: cover;
         }
 
-        .preview-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; color: #fff; }
+        .preview-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; color: var(--text); }
         .preview-meta { color: var(--text-muted); font-size: 0.82rem; }
         
         .playlist-badge {
@@ -470,11 +500,18 @@
                 <span>TikTok</span>
             </a>
         </nav>
-        <select id="language-select" class="lang-select" onchange="changeLanguage(this.value)">
-            <option value="en">English</option>
-            <option value="ku">کوردی</option>
-            <option value="ar">العربية</option>
-        </select>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button id="themeToggle" onclick="toggleTheme()" class="lang-select" style="display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; padding: 0;" title="Toggle Theme">
+                <svg id="themeIcon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                    <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+            </button>
+            <select id="language-select" class="lang-select" onchange="changeLanguage(this.value)">
+                <option value="en">English</option>
+                <option value="ku">کوردی</option>
+                <option value="ar">العربية</option>
+            </select>
+        </div>
     </header>
 
     <div class="container" id="mainContainer">
@@ -623,6 +660,24 @@
 
             const selectElem = document.getElementById('language-select');
             if (selectElem) selectElem.value = lang;
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('app_theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            const icon = document.getElementById('themeIcon');
+            if (theme === 'light') {
+                icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+            } else {
+                icon.innerHTML = '<path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>';
+            }
         }
 
         async function pasteFromClipboard() {
@@ -850,6 +905,10 @@
         document.addEventListener('DOMContentLoaded', () => {
             const savedLang = localStorage.getItem('app_lang') || 'en';
             changeLanguage(savedLang);
+
+            const savedTheme = localStorage.getItem('app_theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
         });
     </script>
 
