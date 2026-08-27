@@ -5,25 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Facebook Downloader</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- بەکارهێنانی کتێبخانەی Canvas-Confetti بۆ کاریگەری بارینی ئاگرین/پێپەر -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
     <style>
         :root {
             --primary: #1877f2;
             --primary-hover: #0d65d9;
             --primary-glow: rgba(24, 119, 242, 0.4);
-            --bg: #0b0f19;
-            --card-bg: rgba(15, 23, 42, 0.75);
-            --border: rgba(255, 255, 255, 0.1);
+            --bg: #070a12;
+            /* Glassmorphism Variables */
+            --card-bg: rgba(15, 23, 42, 0.55);
+            --border: rgba(255, 255, 255, 0.12);
             --text: #f8fafc;
             --text-muted: #94a3b8;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        /* لێرە transition لەسەر * لادراوە بۆ ئەوەی ڕێگە لە ئەنیمەیشنی background نەگرێت */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         
+        /* Animated Gradient Background - تایبەت بە ڕەنگەکانی فەیسبووک */
         body {
-            background-color: var(--bg);
-            background-image: 
-                radial-gradient(circle at 50% 0%, rgba(24, 119, 242, 0.25), transparent 60%),
-                radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.15), transparent 50%);
+            background: linear-gradient(-45deg, #070a12, #0d1b2a, #1877f2, #002244, #1877f2);
+            background-size: 400% 400% !important;
+            animation: gradientBG 10s ease infinite !important;
             color: var(--text);
             font-family: 'Plus Jakarta Sans', 'Vazirmatn', sans-serif;
             min-height: 100vh;
@@ -32,39 +37,36 @@
             align-items: center;
             overflow-x: hidden;
             position: relative;
+            transition: none !important; 
         }
 
-        body::before {
-            content: '';
-            position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(24, 119, 242, 0.08) 0%, transparent 50%);
-            animation: rotateBg 25s linear infinite;
-            z-index: -1;
-            pointer-events: none;
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
-        @keyframes rotateBg {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
+        /* Glassmorphic Header */
         header {
             width: 100%;
-            padding: 12px 5%;
+            padding: 14px 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: rgba(11, 15, 25, 0.45);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
             z-index: 100;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         nav {
@@ -78,13 +80,14 @@
             color: var(--text-muted);
             text-decoration: none;
             font-weight: 600;
-            padding: 8px 14px;
+            padding: 8px 16px;
             border-radius: 12px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             font-size: 0.9rem;
             white-space: nowrap;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         nav a svg {
@@ -108,45 +111,49 @@
             color: #ffffff !important;
             background: linear-gradient(135deg, var(--primary), var(--primary-hover));
             font-weight: 800;
-            box-shadow: 0 0 15px var(--primary-glow), 0 4px 12px rgba(24, 119, 242, 0.3);
+            box-shadow: 0 0 20px var(--primary-glow);
         }
 
         nav a.active svg {
             fill: #ffffff !important;
-            filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8));
+            filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.8));
         }
 
         .lang-select {
-            background: #1e293b;
+            background: rgba(30, 41, 59, 0.5);
             color: var(--text);
             border: 1px solid var(--border);
-            padding: 8px 12px;
-            border-radius: 10px;
+            padding: 8px 14px;
+            border-radius: 12px;
             font-weight: 600;
             cursor: pointer;
             outline: none;
             font-size: 0.85rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        /* Glassmorphic Main Container */
         .container {
             background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            padding: 30px 24px;
-            border-radius: 24px;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            padding: 35px 28px;
+            border-radius: 28px;
             border: 1px solid var(--border);
-            margin-top: 30px;
+            margin-top: 40px;
             width: 90%;
-            max-width: 550px;
+            max-width: 560px;
             text-align: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 35px rgba(24, 119, 242, 0.2);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(24, 119, 242, 0.15);
             animation: floatUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             position: relative;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .container:hover {
             border-color: rgba(24, 119, 242, 0.4);
-            box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 45px rgba(24, 119, 242, 0.3);
+            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.7), 0 0 50px rgba(24, 119, 242, 0.25);
         }
 
         @keyframes floatUp {
@@ -155,28 +162,30 @@
         }
 
         .container h2 {
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #ffffff, #60a5fa);
+            background: linear-gradient(135deg, #ffffff 30%, #60a5fa);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
+            letter-spacing: -0.5px;
         }
 
         .input-group {
             display: flex;
             align-items: center;
-            background: rgba(15, 23, 42, 0.7);
+            background: rgba(11, 15, 25, 0.5);
             border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 4px;
-            margin-bottom: 15px;
+            border-radius: 16px;
+            padding: 6px;
+            margin-bottom: 18px;
             width: 100%;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .input-group:focus-within {
             border-color: var(--primary);
-            box-shadow: 0 0 18px var(--primary-glow);
+            box-shadow: 0 0 20px var(--primary-glow);
         }
 
         input[type="text"] {
@@ -188,26 +197,28 @@
             outline: none;
             font-size: 0.95rem;
             min-width: 0;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .btn-paste {
-            padding: 10px 16px;
-            background: rgba(24, 119, 242, 0.12);
+            padding: 10px 18px;
+            background: rgba(24, 119, 242, 0.15);
             color: #60a5fa;
             border: 1px solid rgba(24, 119, 242, 0.3);
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: 600;
             font-size: 0.85rem;
             white-space: nowrap;
             flex-shrink: 0;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .btn-paste:hover {
             background: var(--primary);
             color: #fff;
             border-color: var(--primary);
-            box-shadow: 0 0 15px var(--primary-glow);
+            box-shadow: 0 0 18px var(--primary-glow);
         }
 
         .trim-title {
@@ -215,7 +226,7 @@
             font-weight: 700;
             color: #60a5fa;
             text-align: left;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -225,14 +236,14 @@
 
         .trim-box {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             width: 100%;
             box-sizing: border-box;
-            padding: 12px;
-            background: rgba(15, 23, 42, 0.4);
-            border-radius: 14px;
+            padding: 14px;
+            background: rgba(11, 15, 25, 0.3);
+            border-radius: 16px;
             border: 1px dashed var(--border);
-            margin-bottom: 15px;
+            margin-bottom: 18px;
             flex-wrap: wrap;
         }
 
@@ -240,13 +251,14 @@
 
         input[type="number"] {
             width: 100%;
-            padding: 10px;
+            padding: 10px 12px;
             border: 1px solid var(--border);
-            background: rgba(15, 23, 42, 0.7);
+            background: rgba(15, 23, 42, 0.6);
             color: #fff;
             border-radius: 10px;
             outline: none;
             font-size: 0.9rem;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         input[type="number"]:focus {
@@ -256,52 +268,94 @@
 
         .trim-box label { font-size: 0.78rem; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600; }
 
-        .options-group { display: flex; gap: 12px; margin-bottom: 20px; }
+        .options-group { display: flex; gap: 12px; margin-bottom: 22px; }
 
         select.quality-select {
             width: 100%;
             padding: 12px;
-            background: rgba(15, 23, 42, 0.7);
+            background: rgba(15, 23, 42, 0.6);
             color: #fff;
             border: 1px solid var(--border);
-            border-radius: 12px;
+            border-radius: 14px;
             outline: none;
             font-weight: 600;
             cursor: pointer;
             font-size: 0.9rem;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         button.btn-main {
+            position: relative;
             width: 100%;
-            padding: 14px;
+            padding: 15px;
             background: linear-gradient(135deg, #1877f2, #0056b3);
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             cursor: pointer;
             font-weight: 700;
             font-size: 1rem;
-            box-shadow: 0 8px 25px -4px var(--primary-glow);
-            position: relative;
             overflow: hidden;
+            z-index: 1;
+            box-shadow: 0 8px 25px -4px var(--primary-glow);
+            transition: all 0.3s ease;
         }
 
         button.btn-main:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 30px -2px rgba(24, 119, 242, 0.6);
-            background: linear-gradient(135deg, #1b82ff, #0d65d9);
+            box-shadow: 0 12px 30px -2px rgba(24, 119, 242, 0.7);
+            filter: brightness(1.1);
+        }
+
+        button.btn-main.loading {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 8px 25px -4px rgba(16, 185, 129, 0.5);
+        }
+
+        /* --- Skeleton Loader --- */
+        .skeleton {
+            display: none;
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.03) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 10px;
+        }
+
+        .skeleton-img {
+            width: 100%;
+            height: 180px;
+            margin-bottom: 12px;
+        }
+
+        .skeleton-text {
+            height: 16px;
+            margin-bottom: 8px;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
         }
 
         .preview-card {
             display: none;
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.6);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 16px;
+            border-radius: 18px;
+            padding: 18px;
             margin-top: 20px;
             text-align: left;
             animation: fadeIn 0.5s ease forwards;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
         }
 
         @keyframes fadeIn {
@@ -313,78 +367,85 @@
 
         .preview-card img {
             width: 100%;
-            border-radius: 10px;
-            margin-bottom: 10px;
+            border-radius: 12px;
+            margin-bottom: 12px;
             object-fit: cover;
+            border: 1px solid var(--border);
         }
 
-        .preview-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; color: #fff; }
-        .preview-meta { color: var(--text-muted); font-size: 0.82rem; }
+        .preview-title { font-weight: 700; font-size: 0.98rem; margin-bottom: 6px; color: #fff; }
+        .preview-meta { color: var(--text-muted); font-size: 0.84rem; }
         
         .playlist-badge {
             display: inline-block;
-            background: #10b981;
+            background: linear-gradient(135deg, #10b981, #059669);
             color: #fff;
-            padding: 4px 10px;
+            padding: 5px 12px;
             border-radius: 8px;
             font-size: 0.75rem;
             font-weight: bold;
-            margin-top: 8px;
+            margin-top: 10px;
         }
 
         .progress-bar {
             width: 100%;
-            background-color: rgba(15, 23, 42, 0.8);
-            border-radius: 12px;
+            background-color: rgba(11, 15, 25, 0.8);
+            border-radius: 14px;
             margin-top: 20px;
             display: none;
             overflow: hidden;
             border: 1px solid var(--border);
-            padding: 3px;
+            padding: 4px;
         }
 
         .progress {
             width: 0%;
-            height: 18px;
+            height: 20px;
             background: linear-gradient(90deg, #1877f2, #10b981);
-            border-radius: 6px;
+            background-size: 200% 100%;
+            animation: moveGradient 2s linear infinite;
+            border-radius: 8px;
             text-align: center;
             color: white;
-            line-height: 18px;
-            font-size: 10px;
+            line-height: 20px;
+            font-size: 11px;
             font-weight: bold;
             box-shadow: 0 0 15px rgba(24, 119, 242, 0.5);
             transition: width 0.3s ease;
         }
 
+        @keyframes moveGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
         @media (max-width: 640px) {
             header {
-                padding: 10px 3%;
+                padding: 12px 4%;
                 flex-direction: column;
-                gap: 10px;
+                gap: 12px;
             }
             nav {
                 width: 100%;
                 justify-content: center;
-                gap: 4px;
+                gap: 6px;
             }
             nav a {
                 padding: 8px 10px;
                 font-size: 0.8rem;
             }
-            nav a span {
-                display: inline-block;
-            }
             .container {
-                margin-top: 15px;
-                padding: 20px 14px;
+                margin-top: 20px;
+                padding: 24px 16px;
                 width: 95%;
             }
-            .trim-box { flex-direction: column; gap: 8px; }
+            .trim-box { flex-direction: column; gap: 10px; }
         }
 
-        .f2ter { text-align: center; margin-top: auto; padding: 20px 0; font-size: 0.8rem; color: var(--text-muted); }
+        .f2ter { text-align: center; margin-top: auto; padding: 25px 0; font-size: 0.82rem; color: var(--text-muted); }
         .fv { color: var(--primary); text-decoration: none; font-weight: 600; }
+        .fv:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -427,8 +488,7 @@
             <button class="btn-paste" onclick="pasteFromClipboard()" data-i18n="btn_paste">Paste</button>
         </div>
 
-        <!-- بەشی بڕینی ڤیدیۆ / Trim Video -->
-        <div class="trim-title" data-i18n="trim_heading"> Trim Video (Optional)</div>
+        <div class="trim-title" data-i18n="trim_heading">✂️ Trim Video (Optional)</div>
         <div class="trim-box">
             <div>
                 <label data-i18n="lbl_start">Start Time (Sec)</label>
@@ -448,6 +508,12 @@
         </div>
 
         <button class="btn-main" onclick="startDownload()" data-i18n="btn_dl">Download</button>
+
+        <div class="skeleton" id="skeletonLoader">
+            <div class="shimmer skeleton-img"></div>
+            <div class="shimmer skeleton-text"></div>
+            <div class="shimmer skeleton-text" style="width: 60%;"></div>
+        </div>
 
         <div class="preview-card" id="previewCard">
             <img id="prevImg" src="" alt="Thumbnail">
@@ -480,11 +546,12 @@
                 "lbl_end": "End Time (Sec)",
                 "msg_empty": "Please enter a URL!",
                 "msg_fetching": "Fetching video info...",
-                "msg_dl": "Downloading...",
+                "msg_dl": "Processing...",
                 "msg_done": "Completed!",
                 "msg_err": "Error occurred during download.",
                 "msg_server": "Server Connection Error!",
-                "playlist_info": "Playlist Detected ({count} Videos) - Will Download as ZIP"
+                "playlist_info": "Playlist Detected ({count} Videos) - Will Download as ZIP",
+                "prompt_paste": "Please paste the video link here:"
             },
             ku: {
                 "nav_home": "سەرەکی",
@@ -495,7 +562,7 @@
                 "fb_title": "داگرتنی ڤیدیۆی فەیسبووک",
                 "input_ph": "لینکی ڤیدیۆکە لێرە دابنێ...",
                 "btn_paste": "پەیست",
-                "trim_heading": " بڕینی ڤیدیۆ (ئارەزوومەندانە)",
+                "trim_heading": "✂️ بڕینی ڤیدیۆ (ئارەزوومەندانە)",
                 "opt_best": "باشترین کوالێتی (ئۆتۆ)",
                 "opt_mp3": "تەنها دەنگ (MP3)",
                 "btn_dl": "داونلۆدکردن",
@@ -503,11 +570,12 @@
                 "lbl_end": "کاتی کۆتایی (چرکە)",
                 "msg_empty": "تکایە لینکێک دابنێ!",
                 "msg_fetching": "هێنانی زانیاری ڤیدیۆ...",
-                "msg_dl": "داگرتن...",
+                "msg_dl": "پرۆسێس دەکرێت...",
                 "msg_done": "تەواوبوو!",
                 "msg_err": "هەڵەیەک ڕوویدا لە کاتی داگرتن.",
                 "msg_server": "کێشەی پەیوەندیکردن بە سێرڤەر!",
-                "playlist_info": "کۆمەڵە ڤیدیۆ دیاریکرا ({count} ڤیدیۆ) - بە فایلی ZIP دادەبەزێت"
+                "playlist_info": "کۆمەڵە ڤیدیۆ دیاریکرا ({count} ڤیدیۆ) - بە فایلی ZIP دادەبەزێت",
+                "prompt_paste": "تکایە بەستەرەکە (Link) لەم شوێنە بنووسە یان پەستای بکە:"
             },
             ar: {
                 "nav_home": "الرئيسية",
@@ -526,11 +594,12 @@
                 "lbl_end": "وقت النهاية (ثانية)",
                 "msg_empty": "الرجاء إدخال الرابط!",
                 "msg_fetching": "جلب معلومات الفيديو...",
-                "msg_dl": "جاري التحميل...",
+                "msg_dl": "جاري المعالجة...",
                 "msg_done": "اكتمل!",
                 "msg_err": "حدث خطأ أثناء التحميل.",
                 "msg_server": "خطأ في الاتصال بالسيرفر!",
-                "playlist_info": "تم التعرّف على قائمة تشغيل ({count} فيديو) - سيتم التحميل بصيغة ZIP"
+                "playlist_info": "تم التعرّف على قائمة تشغيل ({count} فيديو) - سيتم التحميل بصيغة ZIP",
+                "prompt_paste": "الرجاء لصق رابط الفيديو هنا:"
             }
         };
 
@@ -564,19 +633,38 @@
         }
 
         async function pasteFromClipboard() {
-            try {
-                if (navigator.clipboard && navigator.clipboard.readText) {
+            const inputField = document.getElementById('videoUrl');
+
+            if (navigator.clipboard && navigator.clipboard.readText) {
+                try {
                     const text = await navigator.clipboard.readText();
-                    document.getElementById('videoUrl').value = text;
+                    if (text) {
+                        inputField.value = text;
+                        checkVideoInfo();
+                        return;
+                    }
+                } catch (err) {
+                    console.warn("Clipboard API failed or blocked, trying fallbacks...");
+                }
+            }
+
+            try {
+                inputField.focus();
+                inputField.select();
+                const successful = document.execCommand('paste');
+                if (successful && inputField.value) {
                     checkVideoInfo();
-                } else {
-                    throw new Error("Clipboard API not supported");
+                    return;
                 }
             } catch (err) {
-                const input = document.getElementById('videoUrl');
-                input.focus();
-                input.select();
-                alert('Please paste the link using Ctrl+V (or Command+V).');
+                console.warn("execCommand failed...");
+            }
+
+            const promptMsg = translations[currentLang]["prompt_paste"] || "Please paste the link here:";
+            const manualText = prompt(promptMsg);
+            if (manualText) {
+                inputField.value = manualText.trim();
+                checkVideoInfo();
             }
         }
 
@@ -591,8 +679,12 @@
 
         async function fetchMetadata(url) {
             const previewCard = document.getElementById('previewCard');
+            const skeleton = document.getElementById('skeletonLoader');
             const qualitySelect = document.getElementById('qualitySelect');
             const playlistBadge = document.getElementById('playlistBadge');
+
+            previewCard.style.display = 'none';
+            skeleton.style.display = 'block';
 
             try {
                 const response = await fetch('/get-info', {
@@ -626,9 +718,13 @@
                     }
                     qualitySelect.innerHTML += `<option value="mp3">${translations[currentLang]["opt_mp3"]}</option>`;
 
+                    skeleton.style.display = 'none';
                     previewCard.style.display = 'block';
+                } else {
+                    skeleton.style.display = 'none';
                 }
             } catch (e) {
+                skeleton.style.display = 'none';
                 previewCard.style.display = 'none';
             }
         }
@@ -637,12 +733,21 @@
             const card = document.getElementById('mainContainer');
             card.style.transform = 'scale(1.02)';
             card.style.borderColor = '#10b981';
-            card.style.boxShadow = '0 0 50px rgba(16, 185, 129, 0.4)';
-            
+            card.style.boxShadow = '0 0 50px rgba(16, 185, 129, 0.5)';
+
+            // Confetti Animation Effect
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+
             setTimeout(() => {
                 card.style.transform = 'scale(1)';
                 card.style.borderColor = 'var(--border)';
-                card.style.boxShadow = '0 20px 50px rgba(0,0,0,0.5), 0 0 35px rgba(24, 119, 242, 0.2)';
+                card.style.boxShadow = '0 25px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(24, 119, 242, 0.15)';
             }, 1500);
         }
 
@@ -651,11 +756,15 @@
             const format = document.getElementById('qualitySelect').value;
             const startTime = document.getElementById('startTime').value;
             const endTime = document.getElementById('endTime').value;
+            const btnMain = document.querySelector('.btn-main');
 
             const progressBarContainer = document.getElementById('progressBarContainer');
             const progressBar = document.getElementById('progressBar');
 
             if (!url) { alert(translations[currentLang]["msg_empty"]); return; }
+
+            btnMain.classList.add('loading');
+            btnMain.innerText = translations[currentLang]["msg_dl"] || "Processing...";
 
             progressBarContainer.style.display = 'block';
             progressBar.style.width = '0%';
@@ -699,17 +808,27 @@
                 if (response.ok && data.download_url) {
                     progressBar.style.width = '100%';
                     progressBar.innerText = translations[currentLang]["msg_done"];
+                    btnMain.innerText = translations[currentLang]["msg_done"] || "Completed!";
                     triggerSuccessGlow();
                     eventSource.close();
+
+                    setTimeout(() => {
+                        btnMain.classList.remove('loading');
+                        btnMain.innerText = translations[currentLang]["btn_dl"];
+                    }, 2000);
 
                     window.location.href = data.download_url;
                 } else {
                     alert(data.error || translations[currentLang]["msg_err"]);
+                    btnMain.classList.remove('loading');
+                    btnMain.innerText = translations[currentLang]["btn_dl"];
                     progressBarContainer.style.display = 'none';
                     eventSource.close();
                 }
             } catch (error) {
                 alert(translations[currentLang]["msg_server"]);
+                btnMain.classList.remove('loading');
+                btnMain.innerText = translations[currentLang]["btn_dl"];
                 progressBarContainer.style.display = 'none';
                 eventSource.close();
             }
