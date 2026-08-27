@@ -23,27 +23,24 @@ ADMIN_SECRET_KEY = os.getenv('ADMIN_SECRET_KEY', 'mysecret123')
 # --- لیستی IPیە بلۆککراوەکان (IP Blacklist) ---
 BANNED_IPS = set(os.getenv('BANNED_IPS', '').split(',')) if os.getenv('BANNED_IPS') else set()
 
-# --- لیستی پراکسی بۆ Rotation (لەگەڵ پشتگیری Single Proxy) ---
+# --- لیستی پراکسی بۆ Rotation ---
 PROXY_URL = os.getenv('PROXY_URL')
-PROXY_LIST_ENV = os.getenv('PROXY_LIST')  # فرە پراکسی بە کۆما جیاکراوەتەوە
+PROXY_LIST_ENV = os.getenv('PROXY_LIST')
 PROXIES = [p.strip() for p in PROXY_LIST_ENV.split(',')] if PROXY_LIST_ENV else ([PROXY_URL] if PROXY_URL else [])
 
 def get_random_proxy():
-    """هەڵبژاردنی پراکسی بە شێوەیەکی ئۆتۆماتیکی (Dynamic Rotation)"""
     return random.choice(PROXIES) if PROXIES else None
 
-# --- فەنکشنی تایبەت بە وەرگرتنی IPی ڕاستەقینەی بەکارهێنەر لە Cloudflare ---
 def get_client_ip():
     cf_ip = request.headers.get('CF-Connecting-IP')
     if cf_ip:
         return cf_ip.strip()
-    
     forwarded_for = request.headers.get('X-Forwarded-For')
     if forwarded_for:
         return forwarded_for.split(',')[0].strip()
-    
     return request.remote_addr or '127.0.0.1'
 
+# --- API Rate Limiting ---
 limiter = Limiter(
     get_client_ip,
     app=app,
@@ -56,7 +53,6 @@ visitor_logs = []
 @app.before_request
 def check_banned_ip_and_log():
     ip = get_client_ip()
-    
     if ip in BANNED_IPS:
         return jsonify({"error": "Access denied. Your IP is blocked."}), 403
 
@@ -70,7 +66,6 @@ def check_banned_ip_and_log():
         if len(visitor_logs) > 500:
             visitor_logs.pop(0)
 
-# --- زیادکردنی Security Headers بۆ تەواوی ڕاوتەکان ---
 @app.after_request
 def add_security_headers(response):
     response.headers['X-Content-Type-Options'] = 'nosniff'
@@ -102,18 +97,14 @@ def auto_cleanup_downloads_folder():
                 for filename in os.listdir(DOWNLOAD_DIR):
                     file_path = os.path.join(DOWNLOAD_DIR, filename)
                     if os.path.isfile(file_path):
-                        file_age = now - os.path.getmtime(file_path)
-                        if file_age > max_age_seconds:
+                        if now - os.path.getmtime(file_path) > max_age_seconds:
                             os.remove(file_path)
-                            print(f"[Cleanup] Deleted old file: {filename}")
                     elif os.path.isdir(file_path):
-                        dir_age = now - os.path.getmtime(file_path)
-                        if dir_age > max_age_seconds:
+                        if now - os.path.getmtime(file_path) > max_age_seconds:
                             shutil.rmtree(file_path, ignore_errors=True)
-                            print(f"[Cleanup] Deleted old directory: {filename}")
         except Exception as e:
             print(f"[Cleanup Error]: {e}")
-        time.sleep(900)  # پشکنین هەر ١٥ خولەک جارێک
+        time.sleep(900)
 
 cleanup_thread = threading.Thread(target=auto_cleanup_downloads_folder, daemon=True)
 cleanup_thread.start()
@@ -138,7 +129,6 @@ def sanitize_filename(title, max_length=60):
 
 COOKIE_PATH = os.path.join(os.path.dirname(__file__), 'cookies.txt')
 
-# --- ئیدارەدانی فایلی cookies.txt ---
 if COOKIES_CONTENT:
     try:
         with open(COOKIE_PATH, 'w', encoding='utf-8') as f:
@@ -151,7 +141,7 @@ elif YOUTUBE_COOKIES_BASE64:
         with open(COOKIE_PATH, 'w', encoding='utf-8') as f:
             f.write(decoded_cookies)
     except Exception as e:
-        print(f"Failed to load cookies from environment variable: {e}")
+        print(f"Failed to load cookies: {e}")
 
 def fetch_po_token():
     if PO_TOKEN:
@@ -184,16 +174,8 @@ def get_base_ydl_opts(url=None):
 
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.9',
-        'Sec-Ch-Ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',
-        'Sec-Ch-Ua-Mobile': '?0',
-        'Sec-Ch-Ua-Platform': '"Windows"',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'none',
-        'Sec-Fetch-User': '?1',
-        'Upgrade-Insecure-Requests': '1'
     }
 
     if url:
@@ -211,6 +193,8 @@ def get_base_ydl_opts(url=None):
         'geo_bypass': True,
         'http_headers': headers,
         'extractor_args': yt_extractor_args,
+        'retries': 5, # Error Handling: دووبارەکردنەوەی ئۆتۆماتیکی لە کاتی پچڕان
+        'fragment_retries': 5
     }
     
     if os.path.exists(COOKIE_PATH):
@@ -224,7 +208,11 @@ def get_base_ydl_opts(url=None):
 
 progress_queues = {}
 
-# --- Health Check Endpoint (بۆ چاودێریکردنی سێرڤەر) ---
+# --- PWA Service Worker & Manifest Endpoints ---
+@app.route('/service-worker.js')
+def service_worker():
+    return send_from_directory('static', 'service-worker.js')
+
 @app.route('/health')
 def health_check():
     return jsonify({
@@ -258,7 +246,6 @@ def view_admin_ips():
     key = request.args.get('key')
     if key != ADMIN_SECRET_KEY:
         return jsonify({"error": "Unauthorized"}), 403
-
     return jsonify({
         "total_requests": len(visitor_logs),
         "banned_ips": list(BANNED_IPS),
@@ -310,6 +297,7 @@ def get_video_info():
 
     ydl_opts = get_base_ydl_opts(url)
 
+    # Error Handling validation
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
@@ -351,9 +339,12 @@ def get_video_info():
                 'is_playlist': is_playlist,
                 'playlist_count': playlist_count
             })
+    except yt_dlp.utils.DownloadError as de:
+        print(f"YTDLP DownloadError: {str(de)}")
+        return jsonify({'error': 'Invalid URL or video is private/unsupported.'}), 400
     except Exception as e:
         print(f"Fetch Error: {str(e)}")
-        return jsonify({'error': 'Failed to fetch metadata.'}), 400
+        return jsonify({'error': 'Failed to fetch video information from server.'}), 500
 
 @app.route('/download', methods=['POST'])
 @limiter.limit("10 per minute")
@@ -441,7 +432,7 @@ def download_video():
             else:
                 downloaded_files = os.listdir(task_download_dir)
                 if not downloaded_files:
-                    raise Exception("No file downloaded")
+                    raise Exception("No file downloaded by core engine")
                 
                 single_file = os.path.join(task_download_dir, downloaded_files[0])
                 safe_title = sanitize_filename(info.get('title', 'video'))

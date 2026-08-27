@@ -3,8 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universal Video Downloader</title>
+    <title>Universal Video Downloader - Fast & Free</title>
+    
+    <!-- SEO & Open Graph Meta Tags -->
+    <meta name="description" content="Download high-quality videos and audio from YouTube, Facebook, Instagram, and TikTok easily. Free, fast, and secure video downloader.">
+    <meta name="keywords" content="video downloader, youtube downloader, facebook video download, instagram reel downloader, tiktok no watermark">
+    <meta name="author" content="A. Coder">
+    
+    <meta property="og:title" content="Universal Video Downloader">
+    <meta property="og:description" content="Download HD videos from YouTube, Facebook, Instagram, and TikTok instantly.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://fv-downloader.hopto.org/">
+    <meta property="og:image" content="https://fv-downloader.hopto.org/static/og-image.jpg">
+
+    <!-- PWA & Web App Manifest -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --primary: #6366f1;
@@ -14,9 +32,20 @@
             --border: rgba(255, 255, 255, 0.1);
             --text: #f8fafc;
             --text-muted: #94a3b8;
+            --header-bg: rgba(15, 23, 42, 0.8);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; transition: all 0.2s ease; }
+        /* Light Theme Variable Overrides */
+        [data-theme="light"] {
+            --bg: #f1f5f9;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --border: rgba(0, 0, 0, 0.1);
+            --text: #0f172a;
+            --text-muted: #475569;
+            --header-bg: rgba(255, 255, 255, 0.85);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: background-color 0.3s ease, color 0.3s ease; }
         body {
             background-color: var(--bg);
             background-image: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15), transparent 50%);
@@ -28,86 +57,44 @@
             overflow-x: hidden;
         }
 
-        /* --- بەشی پێشەکی گڵۆپ --- */
+        /* Intro Overlay */
         #intro-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background-color: #05070d;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
             z-index: 9999;
             transition: opacity 0.8s ease, visibility 0.8s ease, transform 0.8s ease;
         }
 
         #neon-flash {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle, rgba(99,102,241,0.8) 0%, rgba(165,180,252,0) 70%);
-            opacity: 0;
-            pointer-events: none;
-            z-index: 10000;
-            transition: opacity 0.2s ease;
+            opacity: 0; pointer-events: none; z-index: 10000; transition: opacity 0.2s ease;
         }
 
-        .bulb-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-        }
-
-        .bulb-container {
-            position: relative;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
+        .bulb-wrapper { display: flex; flex-direction: column; align-items: center; position: relative; }
+        .bulb-container { position: relative; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
         .bulb-svg {
-            width: 110px;
-            height: 110px;
-            fill: #334155;
+            width: 110px; height: 110px; fill: #334155;
             filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.1));
             transition: transform 0.3s ease, fill 0.5s ease, filter 0.5s ease;
             animation: pulseBulb 2s infinite ease-in-out;
         }
-
-        .bulb-container:hover .bulb-svg {
-            transform: scale(1.08);
-            fill: #475569;
-        }
+        .bulb-container:hover .bulb-svg { transform: scale(1.08); fill: #475569; }
 
         .pull-chain {
-            width: 4px;
-            height: 60px;
+            width: 4px; height: 60px;
             background: linear-gradient(to bottom, #475569, #94a3b8);
-            position: relative;
-            margin-top: -10px;
-            border-radius: 2px;
-            cursor: pointer;
+            position: relative; margin-top: -10px; border-radius: 2px; cursor: pointer;
             transition: transform 0.15s ease;
         }
         .pull-chain::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: -6px;
-            width: 16px;
-            height: 16px;
-            background: #cbd5e1;
-            border-radius: 50%;
+            content: ''; position: absolute; bottom: -10px; left: -6px;
+            width: 16px; height: 16px; background: #cbd5e1; border-radius: 50%;
             box-shadow: 0 2px 5px rgba(0,0,0,0.5);
         }
-
-        .pull-chain.pulled {
-            transform: translateY(18px);
-        }
+        .pull-chain.pulled { transform: translateY(18px); }
 
         .bulb-container.on .bulb-svg {
             fill: #fbbf24;
@@ -121,247 +108,98 @@
         }
 
         .bulb-text {
-            margin-top: 30px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            font-size: 1.2rem;
-            color: var(--text-muted);
-            min-height: 35px;
-            text-align: center;
-            padding: 0 15px;
+            margin-top: 30px; font-weight: 600; letter-spacing: 0.5px;
+            font-size: 1.2rem; color: #94a3b8; min-height: 35px; text-align: center; padding: 0 15px;
         }
 
-        .fade-out-up {
-            opacity: 0 !important;
-            visibility: hidden !important;
-            transform: translateY(-100vh);
-        }
+        .fade-out-up { opacity: 0 !important; visibility: hidden !important; transform: translateY(-100vh); }
 
-        /* --- ناوەڕۆک --- */
+        /* Main App Content */
         .main-content {
-            opacity: 0;
-            transform: translateY(30px);
+            opacity: 0; transform: translateY(30px);
             transition: opacity 1s ease 0.3s, transform 1s ease 0.3s;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            display: flex; flex-direction: column; min-height: 100vh;
         }
-
-        .main-content.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        .main-content.visible { opacity: 1; transform: translateY(0); }
 
         header {
-            width: 100%;
-            padding: 15px 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(12px);
+            width: 100%; padding: 15px 5%;
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--header-bg); backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            position: sticky; top: 0; z-index: 100;
         }
 
-        nav {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
+        nav { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
         nav a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-weight: 600;
-            padding: 8px 14px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-            transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
+            color: var(--text-muted); text-decoration: none; font-weight: 600;
+            padding: 8px 14px; border-radius: 12px; display: flex; align-items: center; gap: 8px;
+            font-size: 0.9rem; transition: background 0.2s ease, color 0.2s ease;
             white-space: nowrap;
         }
+        nav a svg { width: 18px; height: 18px; flex-shrink: 0; }
+        nav a:hover { color: var(--text); background: rgba(125, 125, 125, 0.1); }
+        nav a.active { color: #fff; background: var(--primary); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
 
-        nav a svg {
-            width: 18px;
-            height: 18px;
-            flex-shrink: 0;
-            transition: transform 0.2s ease;
+        .header-controls { display: flex; gap: 10px; align-items: center; }
+        
+        .theme-btn {
+            background: var(--card-bg); border: 1px solid var(--border);
+            color: var(--text); padding: 6px 10px; border-radius: 8px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
         }
-
-        nav a:hover {
-            color: #fff;
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        nav a.active {
-            color: #fff;
-            background: var(--primary);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-        }
-
-        nav a:active {
-            transform: scale(0.96);
-        }
+        .theme-btn svg { width: 18px; height: 18px; fill: currentColor; }
 
         .lang-select {
-            background: #1e293b;
-            color: var(--text);
-            border: 1px solid var(--border);
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            outline: none;
-            font-size: 0.85rem;
+            background: var(--card-bg); color: var(--text);
+            border: 1px solid var(--border); padding: 6px 10px; border-radius: 8px;
+            font-weight: 600; cursor: pointer; outline: none; font-size: 0.85rem;
         }
 
-        .hero {
-            max-width: 900px;
-            margin: auto;
-            text-align: center;
-            padding: 50px 20px;
-            width: 100%;
-        }
+        .hero { max-width: 900px; margin: auto; text-align: center; padding: 50px 20px; width: 100%; }
         .hero h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-bottom: 16px;
-            background: linear-gradient(135deg, #fff 30%, #a5b4fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 2.5rem; font-weight: 800; margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--text) 30%, var(--primary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
         .hero p { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 40px; }
 
-        /* --- کارتەکان --- */
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 20px;
-            perspective: 1000px;
-        }
-
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; }
         .card {
-            background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            padding: 28px 20px;
-            border-radius: 18px;
-            border: 1px solid var(--border);
-            text-decoration: none;
-            color: var(--text);
-            font-size: 1.05rem;
-            font-weight: 700;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            opacity: 0;
-            transform: translateY(40px) rotateX(-20deg);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            background: var(--card-bg); backdrop-filter: blur(10px);
+            padding: 28px 20px; border-radius: 18px; border: 1px solid var(--border);
+            text-decoration: none; color: var(--text); font-size: 1.05rem; font-weight: 700;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 12px; opacity: 0; transform: translateY(40px);
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, opacity 0.4s ease;
         }
+        .card svg { width: 40px; height: 40px; transition: transform 0.3s ease; }
 
-        .card svg {
-            width: 40px;
-            height: 40px;
-            transition: transform 0.3s ease, fill 0.3s ease;
-        }
-
-        .main-content.visible .card {
-            opacity: 1;
-            transform: translateY(0) rotateX(0deg);
-        }
-
+        .main-content.visible .card { opacity: 1; transform: translateY(0); }
         .main-content.visible .card:nth-child(1) { transition-delay: 0.1s; }
         .main-content.visible .card:nth-child(2) { transition-delay: 0.25s; }
         .main-content.visible .card:nth-child(3) { transition-delay: 0.4s; }
         .main-content.visible .card:nth-child(4) { transition-delay: 0.55s; }
 
-        .card.yt:hover { border-color: #ff0000; box-shadow: 0 10px 25px -5px rgba(255, 0, 0, 0.4); transform: translateY(-8px) scale(1.03) !important; }
+        .card.yt:hover { border-color: #ff0000; box-shadow: 0 10px 25px -5px rgba(255, 0, 0, 0.4); transform: translateY(-6px); }
         .card.yt svg { fill: #ff0000; }
-
-        .card.fb:hover { border-color: #1877f2; box-shadow: 0 10px 25px -5px rgba(24, 119, 242, 0.4); transform: translateY(-8px) scale(1.03) !important; }
+        .card.fb:hover { border-color: #1877f2; box-shadow: 0 10px 25px -5px rgba(24, 119, 242, 0.4); transform: translateY(-6px); }
         .card.fb svg { fill: #1877f2; }
-
-        .card.ig:hover { border-color: #e4405f; box-shadow: 0 10px 25px -5px rgba(228, 64, 95, 0.4); transform: translateY(-8px) scale(1.03) !important; }
+        .card.ig:hover { border-color: #e4405f; box-shadow: 0 10px 25px -5px rgba(228, 64, 95, 0.4); transform: translateY(-6px); }
         .card.ig svg { fill: #e4405f; }
-
-        .card.tt:hover { border-color: #00f2fe; box-shadow: 0 10px 25px -5px rgba(0, 242, 254, 0.4); transform: translateY(-8px) scale(1.03) !important; }
+        .card.tt:hover { border-color: #00f2fe; box-shadow: 0 10px 25px -5px rgba(0, 242, 254, 0.4); transform: translateY(-6px); }
         .card.tt svg { fill: #00f2fe; }
 
-        .card:hover svg { transform: scale(1.15); }
-
-        /* --- خۆگونجاندنی گشتگیر بۆ مۆبایل --- */
         @media (max-width: 768px) {
-            header {
-                padding: 10px 12px;
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-            nav {
-                width: 100%;
-                justify-content: center;
-                order: 2;
-                flex-wrap: wrap;
-                gap: 6px;
-            }
-            .lang-select {
-                order: 1;
-                margin-left: auto;
-            }
-            [dir="rtl"] .lang-select {
-                margin-left: 0;
-                margin-right: auto;
-            }
-            nav a {
-                padding: 6px 10px;
-                font-size: 0.8rem;
-                gap: 5px;
-            }
-            nav a svg {
-                width: 16px;
-                height: 16px;
-            }
-            .hero { padding: 30px 15px; }
-            .hero h1 { font-size: 1.75rem; margin-bottom: 10px; }
-            .hero p { font-size: 0.95rem; margin-bottom: 25px; }
-            .cards-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
-            }
-            .card {
-                padding: 20px 10px;
-                font-size: 0.9rem;
-                border-radius: 14px;
-            }
-            .card svg {
-                width: 32px;
-                height: 32px;
-            }
-        }
-        
-        @media (max-width: 400px) {
-            nav a span { display: inline-block; }
-            .cards-grid { grid-template-columns: repeat(2, 1fr); }
+            header { padding: 10px 12px; flex-wrap: wrap; gap: 10px; }
+            nav { width: 100%; justify-content: center; order: 2; gap: 6px; }
+            .header-controls { order: 1; margin-left: auto; }
+            [dir="rtl"] .header-controls { margin-left: 0; margin-right: auto; }
+            .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
         }
 
-        .f2ter {
-            text-align: center;
-            margin-top: auto;
-            padding: 20px;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-        .fv {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-        }
+        .f2ter { text-align: center; margin-top: auto; padding: 20px; font-size: 0.8rem; color: var(--text-muted); }
+        .fv { color: var(--primary); text-decoration: none; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -404,11 +242,17 @@
                     <span data-i18n="nav_tiktok">TikTok</span>
                 </a>
             </nav>
-            <select id="language-select" class="lang-select" onchange="changeLanguage(this.value)">
-                <option value="en">English</option>
-                <option value="ku">کوردی</option>
-                <option value="ar">العربية</option>
-            </select>
+
+            <div class="header-controls">
+                <button class="theme-btn" id="theme-toggle" aria-label="Toggle Theme">
+                    <svg id="theme-icon" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4C12.92 3.04 12.46 3 12 3z"/></svg>
+                </button>
+                <select id="language-select" class="lang-select" onchange="changeLanguage(this.value)">
+                    <option value="en">English</option>
+                    <option value="ku">کوردی</option>
+                    <option value="ar">العربية</option>
+                </select>
+            </div>
         </header>
 
         <div class="hero">
@@ -436,11 +280,13 @@
         </div>
 
         <footer class="f2ter">
-            © 2026 Professional Web Video Downloader<br>Powered by A. Coder<a href="https://shorturl.at/wrmY1" class="fv"> FV-Downloader</a>
+            © 2026 Professional Web Video Downloader<br>Powered by A. Coder <a href="https://shorturl.at/wrmY1" class="fv">FV-Downloader</a>
         </footer>
     </div>
+
     <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "05b9ef232b1d4b09a8ed1196e0b3c05f"}'></script>
     <script>
+        // Language Switcher Logic
         const translations = {
             en: {
                 "nav_home": "Home",
@@ -487,36 +333,44 @@
             if (selectElem) selectElem.value = lang;
         }
 
+        // Theme Toggle Logic (Dark/Light)
+        const themeBtn = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        
+        const moonIcon = 'M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4C12.92 3.04 12.46 3 12 3z';
+        const sunIcon = 'M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1z';
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('app_theme', theme);
+            themeIcon.querySelector('path').setAttribute('d', theme === 'light' ? sunIcon : moonIcon);
+        }
+
+        themeBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        });
+
+        // Typewriter Effect Logic
         const messages = [
             "Click the bulb or chain to enter...",
             "انقر على المصباح أو السلسلة للدخول...",
             "بۆ چوونه ژوورەوە کلیک لە گڵۆپەکە یان زنجیرەکە بکە..."
         ];
-        let msgIdx = 0;
-        let charIdx = 0;
-        let isDeleting = false;
+        let msgIdx = 0, charIdx = 0, isDeleting = false;
         const typewriterEl = document.getElementById('typewriter-text');
 
         function typeLoop() {
             if (!typewriterEl) return;
             const currentMsg = messages[msgIdx];
-            if (isDeleting) {
-                typewriterEl.innerText = currentMsg.substring(0, charIdx--);
-            } else {
-                typewriterEl.innerText = currentMsg.substring(0, charIdx++);
-            }
+            typewriterEl.innerText = isDeleting ? currentMsg.substring(0, charIdx--) : currentMsg.substring(0, charIdx++);
 
             let typeSpeed = isDeleting ? 40 : 80;
-
             if (!isDeleting && charIdx === currentMsg.length + 1) {
-                typeSpeed = 1800;
-                isDeleting = true;
+                typeSpeed = 1800; isDeleting = true;
             } else if (isDeleting && charIdx === 0) {
-                isDeleting = false;
-                msgIdx = (msgIdx + 1) % messages.length;
-                typeSpeed = 400;
+                isDeleting = false; msgIdx = (msgIdx + 1) % messages.length; typeSpeed = 400;
             }
-
             setTimeout(typeLoop, typeSpeed);
         }
 
@@ -535,16 +389,12 @@
                 gain.gain.setValueAtTime(0.3, ctx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
 
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-
-                osc.start();
-                osc.stop(ctx.currentTime + 0.08);
-            } catch (e) {
-                console.log("Audio play blocked.");
-            }
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.start(); osc.stop(ctx.currentTime + 0.08);
+            } catch (e) { console.log("Audio play blocked."); }
         }
 
+        // Entrance Bulb Animation Logic
         const bulbBtn = document.getElementById('bulb-btn');
         const pullChain = document.getElementById('pull-chain');
         const introOverlay = document.getElementById('intro-overlay');
@@ -555,9 +405,7 @@
         function activateLight() {
             if (activated) return;
             activated = true;
-
             sessionStorage.setItem('bulb_turned_on', 'true');
-
             playSwitchSound();
             pullChain.classList.add('pulled');
 
@@ -580,10 +428,11 @@
             const savedLang = localStorage.getItem('app_lang') || 'en';
             changeLanguage(savedLang);
 
-            const navEntries = performance.getEntriesByType('navigation');
-            const isReload = navEntries.length > 0 && navEntries[0].type === 'reload';
+            const savedTheme = localStorage.getItem('app_theme') || 'dark';
+            setTheme(savedTheme);
 
-            if (isReload) {
+            const navEntries = performance.getEntriesByType('navigation');
+            if (navEntries.length > 0 && navEntries[0].type === 'reload') {
                 sessionStorage.removeItem('bulb_turned_on');
             }
 
@@ -592,6 +441,13 @@
                 mainContent.classList.add('visible');
             } else {
                 typeLoop();
+            }
+
+            // PWA Service Worker Registration
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/service-worker.js').catch(err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
             }
         });
     </script>
