@@ -4,9 +4,11 @@ import base64
 import json
 import time
 import queue
+import random
 import threading
 import subprocess
 import zipfile
+import shutil
 import yt_dlp
 import boto3
 from botocore.config import Config
@@ -20,6 +22,15 @@ ADMIN_SECRET_KEY = os.getenv('ADMIN_SECRET_KEY', 'mysecret123')
 
 # --- لیستی IPیە بلۆککراوەکان (IP Blacklist) ---
 BANNED_IPS = set(os.getenv('BANNED_IPS', '').split(',')) if os.getenv('BANNED_IPS') else set()
+
+# --- لیستی پراکسی بۆ Rotation (لەگەڵ پشتگیری Single Proxy) ---
+PROXY_URL = os.getenv('PROXY_URL')
+PROXY_LIST_ENV = os.getenv('PROXY_LIST')  # فرە پراکسی بە کۆما جیاکراوەتەوە
+PROXIES = [p.strip() for p in PROXY_LIST_ENV.split(',')] if PROXY_LIST_ENV else ([PROXY_URL] if PROXY_URL else [])
+
+def get_random_proxy():
+    """هەڵبژاردنی پراکسی بە شێوەیەکی ئۆتۆماتیکی (Dynamic Rotation)"""
+    return random.choice(PROXIES) if PROXIES else None
 
 # --- فەنکشنی تایبەت بە وەرگرتنی IPی ڕاستەقینەی بەکارهێنەر لە Cloudflare ---
 def get_client_ip():
@@ -46,7 +57,6 @@ visitor_logs = []
 def check_banned_ip_and_log():
     ip = get_client_ip()
     
-    # بلۆککردنی IP ئەگەر لە لیستی ڕەشدا بێت
     if ip in BANNED_IPS:
         return jsonify({"error": "Access denied. Your IP is blocked."}), 403
 
@@ -60,20 +70,30 @@ def check_banned_ip_and_log():
         if len(visitor_logs) > 500:
             visitor_logs.pop(0)
 
+# --- زیادکردنی Security Headers بۆ تەواوی ڕاوتەکان ---
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    return response
+
 R2_ACCOUNT_ID = os.getenv('R2_ACCOUNT_ID')
 R2_ACCESS_KEY_ID = os.getenv('R2_ACCESS_KEY_ID')
 R2_SECRET_ACCESS_KEY = os.getenv('R2_SECRET_ACCESS_KEY')
 R2_BUCKET_NAME = os.getenv('R2_BUCKET_NAME', 'my-media-downloader').strip().strip('/')
 
-PROXY_URL = os.getenv('PROXY_URL')
 PO_TOKEN = os.getenv('PO_TOKEN')
 YOUTUBE_COOKIES_BASE64 = os.getenv('YOUTUBE_COOKIES_BASE64')
+COOKIES_CONTENT = os.getenv('COOKIES_CONTENT')
 
 DOWNLOAD_DIR = os.path.join(os.path.dirname(__file__), 'downloads')
 if not os.path.exists(DOWNLOAD_DIR):
     os.makedirs(DOWNLOAD_DIR)
 
 def auto_cleanup_downloads_folder():
+    """سڕینەوەی فایلی کۆن بۆ پاراستنی هارد و بیرگەی سێرڤەر"""
     while True:
         try:
             now = time.time()
@@ -86,9 +106,14 @@ def auto_cleanup_downloads_folder():
                         if file_age > max_age_seconds:
                             os.remove(file_path)
                             print(f"[Cleanup] Deleted old file: {filename}")
+                    elif os.path.isdir(file_path):
+                        dir_age = now - os.path.getmtime(file_path)
+                        if dir_age > max_age_seconds:
+                            shutil.rmtree(file_path, ignore_errors=True)
+                            print(f"[Cleanup] Deleted old directory: {filename}")
         except Exception as e:
             print(f"[Cleanup Error]: {e}")
-        time.sleep(1800)
+        time.sleep(900)  # پشکنین هەر ١٥ خولەک جارێک
 
 cleanup_thread = threading.Thread(target=auto_cleanup_downloads_folder, daemon=True)
 cleanup_thread.start()
@@ -104,7 +129,6 @@ if R2_ACCOUNT_ID and R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY:
         region_name='auto'
     )
 
-# --- کورتکردنەوە و خاوێنکردنەوەی ناوی فایلەکان (بەرزترین حد ٦٠ پیت) ---
 def sanitize_filename(title, max_length=60):
     clean_title = re.sub(r'[^\w\s-]', '', title)
     clean_title = re.sub(r'\s+', '_', clean_title).strip('_')
@@ -114,7 +138,14 @@ def sanitize_filename(title, max_length=60):
 
 COOKIE_PATH = os.path.join(os.path.dirname(__file__), 'cookies.txt')
 
-if YOUTUBE_COOKIES_BASE64:
+# --- ئیدارەدانی فایلی cookies.txt ---
+if COOKIES_CONTENT:
+    try:
+        with open(COOKIE_PATH, 'w', encoding='utf-8') as f:
+            f.write(COOKIES_CONTENT)
+    except Exception as e:
+        print(f"Failed to write COOKIES_CONTENT: {e}")
+elif YOUTUBE_COOKIES_BASE64:
     try:
         decoded_cookies = base64.b64decode(YOUTUBE_COOKIES_BASE64).decode('utf-8')
         with open(COOKIE_PATH, 'w', encoding='utf-8') as f:
@@ -136,35 +167,71 @@ def fetch_po_token():
         print(f"Error executing generate-token.js: {e}")
     return None
 
-def get_base_ydl_opts():
+def get_base_ydl_opts(url=None):
     yt_client_config = ['tv', 'android', 'ios', 'mweb']
-    yt_extractor_args = {'player_client': yt_client_config}
+    yt_extractor_args = {
+        'youtube': {'player_client': yt_client_config},
+        'tiktok': {
+            'app_version': '34.0.0',
+            'manifest_app_version': '34.0.0',
+            'download_host': 'v16-webapp-prime.tiktok.com'
+        }
+    }
     
     current_po_token = fetch_po_token()
     if current_po_token:
-        yt_extractor_args['po_token'] = [current_po_token]
+        yt_extractor_args['youtube']['po_token'] = [current_po_token]
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Sec-Ch-Ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"Windows"',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'Upgrade-Insecure-Requests': '1'
+    }
+
+    if url:
+        if 'instagram.com' in url:
+            headers['Referer'] = 'https://www.instagram.com/'
+        elif 'facebook.com' in url or 'fb.watch' in url:
+            headers['Referer'] = 'https://www.facebook.com/'
+        elif 'tiktok.com' in url:
+            headers['Referer'] = 'https://www.tiktok.com/'
 
     opts = {
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
         'geo_bypass': True,
-        'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-            'Accept-Language': 'en-US,en;q=0.9',
-        },
-        'extractor_args': {
-            'youtube': yt_extractor_args
-        }
+        'http_headers': headers,
+        'extractor_args': yt_extractor_args,
     }
     
     if os.path.exists(COOKIE_PATH):
         opts['cookiefile'] = COOKIE_PATH
-    if PROXY_URL:
-        opts['proxy'] = PROXY_URL
+
+    active_proxy = get_random_proxy()
+    if active_proxy:
+        opts['proxy'] = active_proxy
+
     return opts
 
 progress_queues = {}
+
+# --- Health Check Endpoint (بۆ چاودێریکردنی سێرڤەر) ---
+@app.route('/health')
+def health_check():
+    return jsonify({
+        "status": "healthy",
+        "uptime": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "storage_ok": os.path.exists(DOWNLOAD_DIR)
+    }), 200
 
 @app.route('/')
 def index():
@@ -198,7 +265,6 @@ def view_admin_ips():
         "logs": visitor_logs
     })
 
-# ڕووت بۆ بلۆککردنی IPی نوێ لە ڕێگەی ئەدمینەوە
 @app.route('/admin/ban', methods=['POST'])
 def ban_ip():
     data = request.json or {}
@@ -212,7 +278,7 @@ def ban_ip():
 
 @app.route('/downloads/<path:filename>')
 def serve_downloaded_file(filename):
-    return send_from_directory(DOWNLOAD_DIR, filename, as_attachment=True)
+    return send_from_directory(DOWNLOAD_DIR, filename, as_attachment=True, download_name=filename)
 
 @app.route('/progress/<task_id>')
 def progress_stream(task_id):
@@ -236,13 +302,13 @@ def progress_stream(task_id):
 @app.route('/get-info', methods=['POST'])
 @limiter.limit("20 per minute")
 def get_video_info():
-    data = request.json
+    data = request.json or {}
     url = data.get('url')
 
     if not url:
         return jsonify({'error': 'URL is required'}), 400
 
-    ydl_opts = get_base_ydl_opts()
+    ydl_opts = get_base_ydl_opts(url)
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -251,7 +317,6 @@ def get_video_info():
             is_playlist = 'entries' in info
             playlist_count = len(info.get('entries', [])) if is_playlist else 0
 
-            # هەژمارکردنی کاتی ڤیدیۆ (Duration)
             duration_sec = info.get('duration')
             if duration_sec:
                 mins, secs = divmod(int(duration_sec), 60)
@@ -293,7 +358,7 @@ def get_video_info():
 @app.route('/download', methods=['POST'])
 @limiter.limit("10 per minute")
 def download_video():
-    data = request.json
+    data = request.json or {}
     url = data.get('url')
     format_type = data.get('format', 'best')
     start_time = data.get('start_time')
@@ -343,7 +408,7 @@ def download_video():
     if not os.path.exists(task_download_dir):
         os.makedirs(task_download_dir)
 
-    ydl_opts = get_base_ydl_opts()
+    ydl_opts = get_base_ydl_opts(url)
     ydl_opts.update({
         'outtmpl': os.path.join(task_download_dir, '%(title)s_%(id)s.%(ext)s'),
         'format': format_spec,
@@ -385,7 +450,6 @@ def download_video():
                 final_file_path = os.path.join(DOWNLOAD_DIR, file_key)
                 os.rename(single_file, final_file_path)
 
-            import shutil
             shutil.rmtree(task_download_dir, ignore_errors=True)
 
             if s3_client:

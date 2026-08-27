@@ -12,19 +12,19 @@
             --primary-glow: rgba(225, 48, 108, 0.4);
             --gradient-ig: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
             --bg: #0b0f19;
-            --card-bg: rgba(15, 23, 42, 0.75);
-            --border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(15, 23, 42, 0.65);
+            --border: rgba(255, 255, 255, 0.12);
             --text: #f8fafc;
             --text-muted: #94a3b8;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
         
+        /* Animated Gradient Background */
         body {
-            background-color: var(--bg);
-            background-image: 
-                radial-gradient(circle at 50% 0%, rgba(225, 48, 108, 0.2), transparent 60%),
-                radial-gradient(circle at 80% 80%, rgba(131, 58, 180, 0.15), transparent 50%);
+            background: linear-gradient(-45deg, #0b0f19, #2b1055, #751555, #0b0f19);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
             color: var(--text);
             font-family: 'Plus Jakarta Sans', 'Vazirmatn', sans-serif;
             min-height: 100vh;
@@ -35,33 +35,31 @@
             position: relative;
         }
 
-        /* --- ئەنیمەیشنی پاشبنەما --- */
-        body::before {
-            content: '';
-            position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(225, 48, 108, 0.08) 0%, transparent 50%);
-            animation: rotateBg 25s linear infinite;
-            z-index: -1;
-            pointer-events: none;
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
-        @keyframes rotateBg {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        #confettiCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 999;
         }
 
         header {
             width: 100%;
-            padding: 15px 8%;
+            padding: 12px 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(16px);
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
@@ -72,31 +70,37 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
         nav a {
             color: var(--text-muted);
             text-decoration: none;
             font-weight: 600;
-            padding: 8px 16px;
+            padding: 8px 14px;
             border-radius: 12px;
-            display: inline-flex;
+            display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
+            gap: 6px;
+            font-size: 0.9rem;
+            white-space: nowrap;
         }
 
         nav a svg {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             fill: currentColor;
             flex-shrink: 0;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         nav a:hover {
             color: #ffffff;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        nav a:hover svg {
+            transform: translateY(-2px) scale(1.15);
         }
 
         nav a.active {
@@ -112,24 +116,27 @@
         }
 
         .lang-select {
-            background: #1e293b;
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
             color: var(--text);
             border: 1px solid var(--border);
-            padding: 6px 12px;
-            border-radius: 8px;
+            padding: 8px 12px;
+            border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
             outline: none;
+            font-size: 0.85rem;
         }
 
-        /* --- Container بە ئەنیمەیشن و Glow --- */
+        /* Glassmorphic Container */
         .container {
             background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            padding: 35px;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            padding: 30px 24px;
             border-radius: 24px;
             border: 1px solid var(--border);
-            margin-top: 50px;
+            margin-top: 30px;
             width: 90%;
             max-width: 550px;
             text-align: center;
@@ -139,8 +146,8 @@
         }
 
         .container:hover {
-            border-color: rgba(225, 48, 108, 0.4);
-            box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 45px rgba(225, 48, 108, 0.25);
+            border-color: rgba(225, 48, 108, 0.5);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 45px rgba(225, 48, 108, 0.3);
         }
 
         @keyframes floatUp {
@@ -157,154 +164,220 @@
             margin-bottom: 20px;
         }
 
-        /* --- بەشی چاککراوی Input Group --- */
         .input-group {
-            position: relative;
-            width: 100%;
-            margin: 20px 0 15px 0;
-        }
-
-        input[type="text"], input[type="number"] {
-            width: 100%;
+            display: flex;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(10px);
             border: 1px solid var(--border);
-            background: rgba(15, 23, 42, 0.6);
-            color: #fff;
             border-radius: 14px;
-            outline: none;
-            font-size: 1rem;
+            padding: 4px;
+            margin-bottom: 15px;
+            width: 100%;
         }
 
-        .input-group input[type="text"] {
-            padding: 16px 95px 16px 18px; /* Padding-right بۆ ڕێگریکردن لە چوونەژێری دەقەکە */
-        }
-
-        input[type="text"]:focus, input[type="number"]:focus {
+        .input-group:focus-within {
             border-color: var(--primary);
             box-shadow: 0 0 18px var(--primary-glow);
         }
 
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 14px;
+            border: none;
+            background: transparent;
+            color: #fff;
+            outline: none;
+            font-size: 0.95rem;
+            min-width: 0;
+        }
+
         .btn-paste {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            padding: 9px 18px;
-            background: rgba(255, 255, 255, 0.1);
+            position: relative;
+            padding: 10px 18px;
+            background: var(--gradient-ig);
             color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: none;
             border-radius: 10px;
             cursor: pointer;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 0.85rem;
             white-space: nowrap;
-            transition: all 0.2s ease;
-            z-index: 2;
+            flex-shrink: 0;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(225, 48, 108, 0.3);
+            animation: pulseGlow 3s infinite alternate;
         }
 
-        .btn-paste:hover { 
-            background: var(--primary);
-            border-color: var(--primary);
-            box-shadow: 0 0 15px var(--primary-glow);
+        .btn-paste::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(60deg, transparent 30%, rgba(255, 255, 255, 0.5) 50%, transparent 70%);
+            transform: rotate(30deg);
+            animation: shimmerEffect 2.5s infinite;
         }
 
-        /* گونجاندن بۆ زمانی کوردی و عەرەبی (RTL) */
-        [dir="rtl"] .input-group input[type="text"] {
-            padding: 16px 18px 16px 95px;
+        .btn-paste:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(225, 48, 108, 0.6);
+            filter: brightness(1.15);
         }
 
-        [dir="rtl"] .btn-paste {
-            right: auto;
-            left: 8px;
+        .btn-paste:active { transform: scale(0.95); }
+
+        @keyframes shimmerEffect {
+            0% { left: -100%; }
+            100% { left: 100%; }
         }
 
-        .trim-box {
-            display: flex !important;
-            flex-wrap: wrap;
-            gap: 12px !important;
-            width: 100% !important;
-            box-sizing: border-box !important;
-            padding: 14px !important;
-            background: rgba(15, 23, 42, 0.4);
-            border-radius: 14px;
-            border: 1px dashed var(--border);
-            margin-bottom: 15px;
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 8px rgba(225, 48, 108, 0.4); }
+            100% { box-shadow: 0 0 18px rgba(225, 48, 108, 0.8); }
         }
 
         .trim-title {
-            width: 100%;
-            text-align: start;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 700;
-            color: var(--text);
-            margin-bottom: 2px;
+            color: #f472b6;
+            text-align: left;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .trim-box > div:not(.trim-title) { flex: 1 1 0% !important; min-width: 0 !important; }
-        .trim-box input { width: 100% !important; box-sizing: border-box !important; padding: 12px; }
-        .trim-box label { font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 5px; font-weight: 600; }
+        [dir="rtl"] .trim-title { text-align: right; }
 
-        .options-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .trim-box {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 14px;
+            border: 1px dashed var(--border);
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .trim-box > div { flex: 1; min-width: 120px; }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.6);
+            color: #fff;
+            border-radius: 10px;
+            outline: none;
+            font-size: 0.9rem;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        .trim-box label { font-size: 0.78rem; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600; }
+
+        .options-group { display: flex; gap: 12px; margin-bottom: 20px; }
 
         select.quality-select {
             width: 100%;
             padding: 12px;
-            background: #1e293b;
+            background: rgba(15, 23, 42, 0.6);
             color: #fff;
             border: 1px solid var(--border);
             border-radius: 12px;
             outline: none;
             font-weight: 600;
             cursor: pointer;
+            font-size: 0.9rem;
         }
 
-        /* --- دوگمەی داونلۆدی ئینستاگرام بە Gradient --- */
         button.btn-main {
             width: 100%;
-            padding: 15px;
+            padding: 14px;
             background: var(--gradient-ig);
             color: white;
             border: none;
-            border-radius: 14px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: 700;
-            font-size: 1.05rem;
+            font-size: 1rem;
             box-shadow: 0 8px 25px -4px var(--primary-glow);
             position: relative;
             overflow: hidden;
         }
+
         button.btn-main:hover {
-            transform: translateY(-3px);
+            transform: translateY(-2px);
             box-shadow: 0 12px 30px -2px rgba(225, 48, 108, 0.6);
             filter: brightness(1.1);
         }
 
-        /* --- کارت بۆ پێشاندانی وێنە و زانیاری --- */
-        .preview-card {
+        /* --- Skeleton Loader CSS --- */
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.15) 37%, rgba(255,255,255,0.05) 63%);
+            background-size: 400% 100%;
+            animation: skeleton-loading 1.4s ease infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes skeleton-loading {
+            0% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .skeleton-card {
             display: none;
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(15px);
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 15px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .skeleton-img { width: 100%; height: 200px; margin-bottom: 12px; }
+        .skeleton-text { height: 16px; margin-bottom: 8px; width: 80%; }
+        .skeleton-text-short { height: 12px; width: 40%; }
+
+        .preview-card {
+            display: none;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
             margin-top: 20px;
             text-align: left;
             animation: fadeIn 0.5s ease forwards;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
         [dir="rtl"] .preview-card { text-align: right; }
 
         .preview-card img {
             width: 100%;
             border-radius: 10px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             object-fit: cover;
         }
 
-        .preview-title { font-weight: 700; font-size: 1rem; margin-bottom: 6px; color: #fff; }
-        .preview-meta { color: var(--text-muted); font-size: 0.85rem; }
+        .preview-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; color: #fff; }
+        .preview-meta { color: var(--text-muted); font-size: 0.82rem; }
         
         .playlist-badge {
             display: inline-block;
@@ -317,7 +390,6 @@
             margin-top: 8px;
         }
 
-        /* --- پڕۆگرێس باری شلگێنی درەوشاوە --- */
         .progress-bar {
             width: 100%;
             background-color: rgba(15, 23, 42, 0.8);
@@ -327,34 +399,53 @@
             overflow: hidden;
             border: 1px solid var(--border);
             padding: 3px;
+            direction: ltr;
         }
+
         .progress {
             width: 0%;
-            height: 22px;
+            height: 18px;
             background: linear-gradient(90deg, #e1306c, #10b981);
-            border-radius: 9px;
+            border-radius: 6px;
             text-align: center;
             color: white;
-            line-height: 22px;
-            font-size: 12px;
+            line-height: 18px;
+            font-size: 10px;
             font-weight: bold;
             box-shadow: 0 0 15px rgba(225, 48, 108, 0.5);
             transition: width 0.3s ease;
         }
 
-        @media (max-width: 600px) {
-            header { padding: 12px 4%; flex-direction: column; gap: 12px; }
-            nav { justify-content: center; gap: 5px; flex-wrap: wrap; }
-            nav a { padding: 6px 10px; font-size: 0.85rem; }
-            .container { margin-top: 20px; padding: 20px 15px; width: 95%; }
+        @media (max-width: 640px) {
+            header {
+                padding: 10px 3%;
+                flex-direction: column;
+                gap: 10px;
+            }
+            nav {
+                width: 100%;
+                justify-content: center;
+                gap: 4px;
+            }
+            nav a {
+                padding: 8px 10px;
+                font-size: 0.8rem;
+            }
+            .container {
+                margin-top: 15px;
+                padding: 20px 14px;
+                width: 95%;
+            }
             .trim-box { flex-direction: column; gap: 8px; }
         }
 
-        .f2ter { text-align: center; margin-top: auto; padding: 25px; font-size: 0.8rem; color: var(--text-muted); }
+        .f2ter { text-align: center; margin-top: auto; padding: 20px 0; font-size: 0.8rem; color: var(--text-muted); }
         .fv { color: var(--primary); text-decoration: none; font-weight: 600; }
     </style>
 </head>
 <body>
+
+    <canvas id="confettiCanvas"></canvas>
 
     <header>
         <nav>
@@ -394,8 +485,8 @@
             <button class="btn-paste" onclick="pasteFromClipboard()" data-i18n="btn_paste">Paste</button>
         </div>
 
+        <div class="trim-title" data-i18n="trim_title">Trim Video (Optional) ✂️</div>
         <div class="trim-box">
-            <div class="trim-title" data-i18n="trim_title">Trim Video (Optional)</div>
             <div>
                 <label data-i18n="lbl_start">Start Time (Sec)</label>
                 <input type="number" id="startTime" placeholder="0" min="0">
@@ -415,6 +506,13 @@
 
         <button class="btn-main" onclick="startDownload()" data-i18n="btn_dl">Download</button>
 
+        <!-- Skeleton Loader UI -->
+        <div class="skeleton-card" id="skeletonCard">
+            <div class="skeleton skeleton-img"></div>
+            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text-short"></div>
+        </div>
+
         <div class="preview-card" id="previewCard">
             <img id="prevImg" src="" alt="Thumbnail">
             <div class="preview-title" id="prevTitle"></div>
@@ -426,7 +524,7 @@
             <div class="progress" id="progressBar">0%</div>
         </div>
     </div>
-    <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "05b9ef232b1d4b09a8ed1196e0b3c05f"}'></script>
+
     <script>
         const translations = {
             en: {
@@ -438,19 +536,18 @@
                 "ig_title": "Instagram Downloader",
                 "input_ph": "Paste video link here...",
                 "btn_paste": "Paste",
-                "trim_title": "Trim Video (Optional)",
+                "trim_title": "Trim Video (Optional) ✂️",
                 "opt_best": "Best Quality (Auto)",
                 "opt_mp3": "Audio Only (MP3)",
                 "btn_dl": "Download",
                 "lbl_start": "Start Time (Sec)",
                 "lbl_end": "End Time (Sec)",
                 "msg_empty": "Please enter a URL!",
-                "msg_fetching": "Fetching video info...",
-                "msg_dl": "Downloading...",
                 "msg_done": "Completed!",
                 "msg_err": "Error occurred during download.",
                 "msg_server": "Server Connection Error!",
-                "playlist_info": "Playlist/Carousel Detected ({count} Items) - Will Download as ZIP"
+                "playlist_info": "Playlist/Carousel Detected ({count} Items) - Will Download as ZIP",
+                "prompt_paste": "Please paste the video link here:"
             },
             ku: {
                 "nav_home": "سەرەکی",
@@ -468,12 +565,11 @@
                 "lbl_start": "کاتی دەستپێک (چرکە)",
                 "lbl_end": "کاتی کۆتایی (چرکە)",
                 "msg_empty": "تکایە لینکێک دابنێ!",
-                "msg_fetching": "هێنانی زانیاری ڤیدیۆ...",
-                "msg_dl": "داگرتن...",
                 "msg_done": "تەواوبوو!",
                 "msg_err": "هەڵەیەک ڕوویدا لە کاتی داگرتن.",
                 "msg_server": "کێشەی پەیوەندیکردن بە سێرڤەر!",
-                "playlist_info": "کۆمەڵە مێدیا دیاریکرا ({count} بڕگە) - بە فایلی ZIP دادەبەزێت"
+                "playlist_info": "کۆمەڵە مێدیا دیاریکرا ({count} بڕگە) - بە فایلی ZIP دادەبەزێت",
+                "prompt_paste": "تکایە بەستەرەکە (Link) لەم شوێنە بنووسە یان پەستای بکە:"
             },
             ar: {
                 "nav_home": "الرئيسية",
@@ -484,23 +580,23 @@
                 "ig_title": "تحميل فيديوهات إنستغرام",
                 "input_ph": "ألصق رابط الفيديو هنا...",
                 "btn_paste": "لصق",
-                "trim_title": "قص الفيديو (اختياري)",
+                "trim_title": "قص الفيديو (اختياري) ✂️",
                 "opt_best": "أفضل جودة (تلقائي)",
                 "opt_mp3": "صوت فقط (MP3)",
                 "btn_dl": "تحميل",
                 "lbl_start": "وقت البداية (ثانية)",
                 "lbl_end": "وقت النهاية (ثانية)",
                 "msg_empty": "الرجاء إدخال الرابط!",
-                "msg_fetching": "جلب معلومات الفيديو...",
-                "msg_dl": "جاري التحميل...",
                 "msg_done": "اكتمل!",
                 "msg_err": "حدث خطأ أثناء التحميل.",
                 "msg_server": "خطأ في الاتصال بالسيرفر!",
-                "playlist_info": "تم التعرّف على عدة وسائط ({count} عناصر) - سيتم التحميل بصيغة ZIP"
+                "playlist_info": "تم التعرّف على عدة وسائط ({count} عناصر) - سيتم التحميل بصيغة ZIP",
+                "prompt_paste": "الرجاء لصق رابط الفيديو هنا:"
             }
         };
 
         let currentLang = 'en';
+        let activeEventSource = null;
 
         function changeLanguage(lang) {
             currentLang = lang;
@@ -510,15 +606,16 @@
             
             document.querySelectorAll('[data-i18n]').forEach(elem => {
                 const key = elem.getAttribute('data-i18n');
-                 if (translations[lang] && translations[lang][key]) {
+                if (translations[lang] && translations[lang][key]) {
                     const span = elem.querySelector('span');
                     if (span) {
                         span.innerText = translations[lang][key];
                     } else {
                         elem.innerText = translations[lang][key];
                     }
-                 }
-                });
+                }
+            });
+
             document.querySelectorAll('[data-i18n-ph]').forEach(elem => {
                 const key = elem.getAttribute('data-i18n-ph');
                 if (translations[lang] && translations[lang][key]) elem.placeholder = translations[lang][key];
@@ -529,26 +626,33 @@
         }
 
         async function pasteFromClipboard() {
-            try {
-                if (navigator.clipboard && navigator.clipboard.readText) {
+            const inputField = document.getElementById('videoUrl');
+
+            if (navigator.clipboard && navigator.clipboard.readText) {
+                try {
                     const text = await navigator.clipboard.readText();
-                    document.getElementById('videoUrl').value = text;
-                    checkVideoInfo();
-                } else {
-                    throw new Error("Clipboard API not supported");
+                    if (text) {
+                        inputField.value = text;
+                        checkVideoInfo();
+                        return;
+                    }
+                } catch (err) {
+                    console.warn("Clipboard API failed...");
                 }
-            } catch (err) {
-                const input = document.getElementById('videoUrl');
-                input.focus();
-                input.select();
-                alert('Please paste the link using Ctrl+V (or Command+V).');
+            }
+
+            const promptMsg = translations[currentLang]["prompt_paste"] || "Please paste the link here:";
+            const manualText = prompt(promptMsg);
+            if (manualText) {
+                inputField.value = manualText.trim();
+                checkVideoInfo();
             }
         }
 
         let typingTimer;
         function checkVideoInfo() {
             clearTimeout(typingTimer);
-            const url = document.getElementById('videoUrl').value;
+            const url = document.getElementById('videoUrl').value.trim();
             if (url.length > 10) {
                 typingTimer = setTimeout(() => fetchMetadata(url), 600);
             }
@@ -556,8 +660,12 @@
 
         async function fetchMetadata(url) {
             const previewCard = document.getElementById('previewCard');
+            const skeletonCard = document.getElementById('skeletonCard');
             const qualitySelect = document.getElementById('qualitySelect');
             const playlistBadge = document.getElementById('playlistBadge');
+
+            previewCard.style.display = 'none';
+            skeletonCard.style.display = 'block';
 
             try {
                 const response = await fetch('/get-info', {
@@ -568,12 +676,12 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    document.getElementById('prevImg').src = data.thumbnail;
-                    document.getElementById('prevTitle').innerText = data.title;
-                    document.getElementById('prevMeta').innerText = `Duration: ${data.duration} | By: ${data.uploader}`;
+                    document.getElementById('prevImg').src = data.thumbnail || '';
+                    document.getElementById('prevTitle').innerText = data.title || 'Instagram Post';
+                    document.getElementById('prevMeta').innerText = `Duration: ${data.duration || 'N/A'} | By: ${data.uploader || 'Instagram User'}`;
                     
                     if (data.is_playlist) {
-                        const badgeText = translations[currentLang]["playlist_info"].replace('{count}', data.playlist_count);
+                        const badgeText = translations[currentLang]["playlist_info"].replace('{count}', data.playlist_count || 0);
                         playlistBadge.innerText = badgeText;
                         playlistBadge.style.display = 'inline-block';
                     } else {
@@ -591,19 +699,76 @@
                     }
                     qualitySelect.innerHTML += `<option value="mp3">${translations[currentLang]["opt_mp3"]}</option>`;
 
+                    skeletonCard.style.display = 'none';
                     previewCard.style.display = 'block';
+                } else {
+                    skeletonCard.style.display = 'none';
                 }
             } catch (e) {
+                skeletonCard.style.display = 'none';
                 previewCard.style.display = 'none';
             }
+        }
+
+        /* --- Confetti Animation JS --- */
+        function triggerConfetti() {
+            const canvas = document.getElementById('confettiCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            let pieces = [];
+            const numberOfPieces = 100;
+            const colors = ['#e1306c', '#f09433', '#e6683c', '#dc2743', '#cc2366', '#bc1888', '#10b981'];
+
+            for (let i = 0; i < numberOfPieces; i++) {
+                pieces.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    rotation: Math.random() * 360,
+                    size: Math.random() * 8 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    speed: Math.random() * 4 + 2,
+                    oscillation: Math.random() * 2
+                });
+            }
+
+            let animationFrame;
+            function update() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                pieces.forEach((p) => {
+                    p.y += p.speed;
+                    p.rotation += 2;
+                    p.x += Math.sin(p.oscillation);
+                    p.oscillation += 0.05;
+
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate((p.rotation * Math.PI) / 180);
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                    ctx.restore();
+                });
+
+                pieces = pieces.filter(p => p.y < canvas.height);
+                if (pieces.length > 0) {
+                    animationFrame = requestAnimationFrame(update);
+                } else {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    cancelAnimationFrame(animationFrame);
+                }
+            }
+            update();
         }
 
         function triggerSuccessGlow() {
             const card = document.getElementById('mainContainer');
             card.style.transform = 'scale(1.02)';
             card.style.borderColor = '#10b981';
-            card.style.boxShadow = '0 0 50px rgba(16, 185, 129, 0.4)';
+            card.style.boxShadow = '0 0 50px rgba(16, 185, 129, 0.5)';
             
+            triggerConfetti();
+
             setTimeout(() => {
                 card.style.transform = 'scale(1)';
                 card.style.borderColor = 'var(--border)';
@@ -612,7 +777,7 @@
         }
 
         async function startDownload() {
-            const url = document.getElementById('videoUrl').value;
+            const url = document.getElementById('videoUrl').value.trim();
             const format = document.getElementById('qualitySelect').value;
             const startTime = document.getElementById('startTime').value;
             const endTime = document.getElementById('endTime').value;
@@ -622,14 +787,16 @@
 
             if (!url) { alert(translations[currentLang]["msg_empty"]); return; }
 
+            if (activeEventSource) activeEventSource.close();
+
             progressBarContainer.style.display = 'block';
             progressBar.style.width = '0%';
             progressBar.innerText = '0%';
 
             const taskId = 'task_' + Date.now();
 
-            const eventSource = new EventSource(`/progress/${taskId}`);
-            eventSource.onmessage = (event) => {
+            activeEventSource = new EventSource(`/progress/${taskId}`);
+            activeEventSource.onmessage = (event) => {
                 const data = JSON.parse(event.data);
                 if (data.percent !== undefined) {
                     const pct = Math.round(data.percent);
@@ -642,7 +809,7 @@
                     }
                 }
                 if (data.status === 'completed' || data.status === 'error') {
-                    eventSource.close();
+                    activeEventSource.close();
                 }
             };
 
@@ -665,18 +832,18 @@
                     progressBar.style.width = '100%';
                     progressBar.innerText = translations[currentLang]["msg_done"];
                     triggerSuccessGlow();
-                    eventSource.close();
+                    if (activeEventSource) activeEventSource.close();
 
                     window.location.href = data.download_url;
                 } else {
                     alert(data.error || translations[currentLang]["msg_err"]);
                     progressBarContainer.style.display = 'none';
-                    eventSource.close();
+                    if (activeEventSource) activeEventSource.close();
                 }
             } catch (error) {
                 alert(translations[currentLang]["msg_server"]);
                 progressBarContainer.style.display = 'none';
-                eventSource.close();
+                if (activeEventSource) activeEventSource.close();
             }
         }
 
@@ -685,7 +852,6 @@
             changeLanguage(savedLang);
         });
     </script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
     <footer class="f2ter">
         © 2026 Professional Web Video Downloader<br>

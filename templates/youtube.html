@@ -5,27 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Downloader</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- بەکارهێنانی Canvas-Confetti بۆ کاریگەری بارینی ئاگرین/پێپەر -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
     <style>
         :root {
-            /* ڕەنگەکانی یوتیوب */
             --primary: #ff0000;
             --primary-hover: #cc0000;
             --bg: #0b0f19;
-            --card-bg: rgba(30, 41, 59, 0.75);
-            --border: rgba(255, 0, 0, 0.25);
+            /* Glassmorphism Variables */
+            --card-bg: rgba(30, 41, 59, 0.45);
+            --border: rgba(255, 255, 255, 0.12);
             --text: #f8fafc;
             --text-muted: #94a3b8;
-            --glow: rgba(255, 0, 0, 0.4);
+            --glow: rgba(255, 0, 0, 0.35);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
 
+        /* Animated Gradient Background */
         body {
-            background-color: var(--bg);
-            background-image: 
-                radial-gradient(circle at 15% 20%, rgba(255, 0, 0, 0.15) 0%, transparent 45%),
-                radial-gradient(circle at 85% 80%, rgba(220, 38, 38, 0.12) 0%, transparent 45%);
-            background-attachment: fixed;
+            background: linear-gradient(-45deg, #0b0f19, #1e1b4b, #2e1065, #0f172a);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
             color: var(--text);
             font-family: 'Plus Jakarta Sans', 'Vazirmatn', sans-serif;
             min-height: 100vh;
@@ -35,15 +37,22 @@
             overflow-x: hidden;
         }
 
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphic Header */
         header {
             width: 100%;
-            padding: 16px 8%;
+            padding: 12px 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(11, 15, 25, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
@@ -52,35 +61,35 @@
 
         nav { 
             display: flex; 
-            gap: 10px; 
+            gap: 8px; 
             align-items: center;
+            flex-wrap: wrap;
         }
         
         nav a {
             color: var(--text-muted);
             text-decoration: none;
             font-weight: 600;
-            padding: 10px 18px;
-            border-radius: 14px;
+            padding: 8px 14px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.95rem;
+            gap: 6px;
+            font-size: 0.9rem;
             position: relative;
-            overflow: hidden;
             white-space: nowrap;
         }
         
         nav a svg {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             flex-shrink: 0;
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         
         nav a:hover { 
             color: #fff; 
-            background: rgba(255, 255, 255, 0.06); 
+            background: rgba(255, 255, 255, 0.08); 
         }
 
         nav a:hover svg {
@@ -97,30 +106,39 @@
         nav a:active { transform: scale(0.95); }
 
         .lang-select {
-            background: rgba(30, 41, 59, 0.8);
+            background: rgba(255, 255, 255, 0.08);
             color: var(--text);
             border: 1px solid var(--border);
-            padding: 8px 14px;
+            padding: 8px 12px;
             border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
             outline: none;
+            font-size: 0.85rem;
+            backdrop-filter: blur(10px);
         }
         .lang-select:hover { border-color: var(--primary); }
 
+        /* Glassmorphic Main Container */
         .container {
             background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            padding: 40px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 30px 24px;
             border-radius: 24px;
             border: 1px solid var(--border);
-            margin-top: 50px;
+            margin-top: 30px;
             width: 90%;
             max-width: 560px;
             text-align: center;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 30px var(--glow);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
             animation: fadeIn 0.5s ease-out;
+            position: relative;
+        }
+
+        .container:hover {
+            border-color: rgba(255, 0, 0, 0.3);
+            box-shadow: 0 30px 70px rgba(0,0,0,0.5), 0 0 30px var(--glow);
         }
 
         @keyframes fadeIn {
@@ -129,29 +147,28 @@
         }
 
         .container h2 {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: 800;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             background: linear-gradient(to right, #fff, var(--text-muted));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        /* چاککردنی داغدانی بەتنی پەیست لە ناو بۆردەرەکەدا */
         .input-group {
             display: flex;
             align-items: center;
-            background: rgba(15, 23, 42, 0.7);
+            background: rgba(15, 23, 42, 0.5);
             border: 1px solid var(--border);
             border-radius: 14px;
-            padding: 4px 6px;
+            padding: 4px;
             margin-bottom: 15px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+            width: 100%;
         }
 
         .input-group:focus-within {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--glow);
+            box-shadow: 0 0 15px var(--glow);
         }
 
         input[type="text"] {
@@ -165,147 +182,168 @@
             min-width: 0;
         }
 
-        input[type="number"] {
-            width: 100%;
-            padding: 10px 14px;
-            border: 1px solid var(--border);
-            background: rgba(15, 23, 42, 0.7);
-            color: #fff;
-            border-radius: 12px;
-            outline: none;
-            font-size: 0.95rem;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        input[type="number"]:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--glow);
-        }
-
         .btn-paste {
             padding: 10px 16px;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.1);
             color: #ffffff;
-            border: 1px solid var(--border);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             cursor: pointer;
             font-weight: 600;
             font-size: 0.85rem;
             white-space: nowrap;
             flex-shrink: 0;
-            transition: all 0.25s ease;
         }
 
         .btn-paste:hover { 
             background: var(--primary);
-            border-color: var(--primary);
-            box-shadow: 0 0 15px var(--glow);
-        }
-
-        /* --- بەشی کەتکردنی ڤیدیۆ --- */
-        .trim-box {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            width: 100%;
-            box-sizing: border-box;
-            padding: 14px;
-            background: rgba(15, 23, 42, 0.5);
-            border-radius: 14px;
-            border: 1px dashed var(--border);
-            margin-bottom: 20px;
+            box-shadow: 0 0 10px var(--glow);
         }
 
         .trim-title {
             width: 100%;
-            text-align: start;
+            text-align: left;
             font-size: 0.85rem;
             font-weight: 700;
-            color: var(--text);
-            margin-bottom: 2px;
+            color: #f87171;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .trim-box > div:not(.trim-title) {
-            flex: 1;
-            min-width: 0;
+        [dir="rtl"] .trim-title { text-align: right; }
+
+        .trim-box {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.3);
+            border-radius: 14px;
+            border: 1px dashed var(--border);
+            margin-bottom: 15px;
+            flex-wrap: wrap;
         }
 
-        .trim-box label { font-size: 0.82rem; color: var(--text-muted); display: block; margin-bottom: 6px; font-weight: 600; }
+        .trim-box > div { flex: 1; min-width: 120px; }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.5);
+            color: #fff;
+            border-radius: 10px;
+            outline: none;
+            font-size: 0.9rem;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 12px var(--glow);
+        }
+
+        .trim-box label { font-size: 0.78rem; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600; }
 
         .options-group {
             display: flex;
             gap: 12px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         select.quality-select {
             width: 100%;
-            padding: 14px;
-            background: rgba(15, 23, 42, 0.7);
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.5);
             color: #fff;
             border: 1px solid var(--border);
-            border-radius: 14px;
+            border-radius: 12px;
             outline: none;
             font-weight: 600;
             cursor: pointer;
-        }
-
-        select.quality-select:focus {
-            border-color: var(--primary);
+            font-size: 0.9rem;
         }
 
         button.btn-main {
             width: 100%;
-            padding: 16px;
+            padding: 14px;
             background: linear-gradient(135deg, var(--primary), #b91c1c);
             color: white;
             border: none;
-            border-radius: 14px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: 700;
-            font-size: 1.05rem;
-            box-shadow: 0 10px 25px var(--glow);
+            font-size: 1rem;
+            box-shadow: 0 8px 20px var(--glow);
         }
 
         button.btn-main:hover { 
             transform: translateY(-2px);
-            box-shadow: 0 14px 30px rgba(255, 0, 0, 0.5);
+            box-shadow: 0 12px 25px rgba(255, 0, 0, 0.5);
+            filter: brightness(1.1);
         }
 
-        button.btn-main:active {
-            transform: translateY(0);
-        }
-
+        /* Glass Preview Card */
         .preview-card {
             display: none;
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.5);
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 18px;
-            margin-top: 25px;
+            padding: 16px;
+            margin-top: 20px;
             text-align: left;
-            animation: fadeIn 0.4s ease-out;
+            animation: fadeIn 0.5s ease forwards;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
         }
         
         [dir="rtl"] .preview-card { text-align: right; }
 
         .preview-card img {
             width: 100%;
-            border-radius: 12px;
-            margin-bottom: 12px;
+            border-radius: 10px;
+            margin-bottom: 10px;
             object-fit: cover;
         }
 
-        .preview-title { font-weight: 700; font-size: 1rem; margin-bottom: 6px; color: #fff; }
-        .preview-meta { color: var(--text-muted); font-size: 0.88rem; }
-        
+        .preview-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; color: #fff; }
+        .preview-meta { color: var(--text-muted); font-size: 0.82rem; }
+
+        /* Skeleton Loader with Shimmer Effect */
+        .skeleton-card {
+            display: none;
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.03) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .skeleton-img { width: 100%; height: 180px; margin-bottom: 12px; }
+        .skeleton-title { width: 80%; height: 18px; margin-bottom: 8px; }
+        .skeleton-meta { width: 40%; height: 14px; }
+
         .playlist-badge {
             display: inline-block;
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: #10b981;
             color: #fff;
-            padding: 4px 12px;
+            padding: 4px 10px;
             border-radius: 8px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: bold;
             margin-top: 8px;
         }
@@ -314,7 +352,7 @@
             width: 100%;
             background-color: rgba(15, 23, 42, 0.6);
             border-radius: 12px;
-            margin-top: 24px;
+            margin-top: 20px;
             display: none;
             overflow: hidden;
             border: 1px solid var(--border);
@@ -323,60 +361,47 @@
 
         .progress {
             width: 0%;
-            height: 20px;
+            height: 18px;
             background: linear-gradient(90deg, #10b981, #34d399);
-            border-radius: 8px;
+            border-radius: 6px;
             text-align: center;
             color: white;
-            line-height: 20px;
-            font-size: 11px;
+            line-height: 18px;
+            font-size: 10px;
             font-weight: bold;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
             transition: width 0.3s ease;
         }
 
-        /* گونجاندن بە تەواوی بۆ شاشەی م مۆبایل */
-        @media (max-width: 680px) {
+        @media (max-width: 640px) {
             header {
-                padding: 12px 16px;
-                flex-direction: column;
-                gap: 14px;
-            }
-
-            nav {
-                width: 100%;
-                justify-content: center;
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-
-            nav a {
-                padding: 8px 12px;
-                border-radius: 10px;
-                font-size: 0.85rem;
-            }
-
-            nav a svg {
-                width: 16px;
-                height: 16px;
-            }
-
-            .container {
-                margin-top: 20px;
-                padding: 24px 16px;
-                width: 92%;
-            }
-
-            .trim-box {
+                padding: 10px 3%;
                 flex-direction: column;
                 gap: 10px;
             }
+            nav {
+                width: 100%;
+                justify-content: center;
+                gap: 4px;
+            }
+            nav a {
+                padding: 8px 10px;
+                border-radius: 10px;
+                font-size: 0.8rem;
+            }
+            .container {
+                margin-top: 15px;
+                padding: 20px 14px;
+                width: 95%;
+            }
+            .trim-box { flex-direction: column; gap: 8px; }
         }
 
         .f2ter {
             text-align: center;
             margin-top: auto;
-            padding: 30px 0;
-            font-size: 0.85rem;
+            padding: 20px 0;
+            font-size: 0.8rem;
             color: var(--text-muted);
         }
 
@@ -385,7 +410,6 @@
             text-decoration: none;
             font-weight: 600;
         }
-        .fv:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -421,7 +445,7 @@
         </select>
     </header>
 
-    <div class="container">
+    <div class="container" id="mainContainer">
         <h2 data-i18n="yt_title">YouTube Downloader</h2>
         
         <div class="input-group">
@@ -429,8 +453,8 @@
             <button class="btn-paste" onclick="pasteFromClipboard()" data-i18n="btn_paste">Paste</button>
         </div>
 
+        <div class="trim-title" data-i18n="trim_title">Trim Video (Optional) ✂️</div>
         <div class="trim-box">
-            <div class="trim-title" data-i18n="trim_title">Trim Video (Optional)</div>
             <div>
                 <label data-i18n="lbl_start">Start Time (Sec)</label>
                 <input type="number" id="startTime" placeholder="0" min="0">
@@ -450,6 +474,14 @@
 
         <button class="btn-main" onclick="startDownload()" data-i18n="btn_dl">Download</button>
 
+        <!-- Skeleton Loader UI -->
+        <div class="skeleton-card" id="skeletonCard">
+            <div class="shimmer skeleton-img"></div>
+            <div class="shimmer skeleton-title"></div>
+            <div class="shimmer skeleton-meta"></div>
+        </div>
+
+        <!-- Preview Card UI -->
         <div class="preview-card" id="previewCard">
             <img id="prevImg" src="" alt="Thumbnail">
             <div class="preview-title" id="prevTitle"></div>
@@ -461,6 +493,7 @@
             <div class="progress" id="progressBar">0%</div>
         </div>
     </div>
+
     <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "05b9ef232b1d4b09a8ed1196e0b3c05f"}'></script>
     <script>
         const translations = {
@@ -473,7 +506,7 @@
                 "yt_title": "YouTube Downloader",
                 "input_ph": "Paste video link here...",
                 "btn_paste": "Paste",
-                "trim_title": "Trim Video (Optional)",
+                "trim_title": "Trim Video (Optional) ✂️",
                 "opt_best": "Best Quality (Auto)",
                 "opt_mp3": "Audio Only (MP3)",
                 "btn_dl": "Download",
@@ -485,7 +518,8 @@
                 "msg_done": "Completed!",
                 "msg_err": "Error occurred during download.",
                 "msg_server": "Server Connection Error!",
-                "playlist_info": "Playlist Detected ({count} Videos) - Will Download as ZIP"
+                "playlist_info": "Playlist Detected ({count} Videos) - Will Download as ZIP",
+                "prompt_paste": "Please paste the video link here:"
             },
             ku: {
                 "nav_home": "سەرەکی",
@@ -496,7 +530,7 @@
                 "yt_title": "داگرتنی ڤیدیۆی یووتیووب",
                 "input_ph": "لینکی ڤیدیۆکە لێرە دابنێ...",
                 "btn_paste": "پەیست",
-                "trim_title": "بڕینی ڤیدیۆ (ئارەزوومەندانە)",
+                "trim_title": "بڕینی ڤیدیۆ (ئارەزوومەندانە) ✂️",
                 "opt_best": "باشترین کوالێتی (ئۆتۆ)",
                 "opt_mp3": "تەنها دەنگ (MP3)",
                 "btn_dl": "داونلۆدکردن",
@@ -508,7 +542,8 @@
                 "msg_done": "تەواوبوو!",
                 "msg_err": "هەڵەیەک ڕوویدا لە کاتی داگرتن.",
                 "msg_server": "کێشەی پەیوەندیکردن بە سێرڤەر!",
-                "playlist_info": "پەیلیست دیاریکرا ({count} ڤیدیۆ) - بە فایلی ZIP دادەبەزێت"
+                "playlist_info": "پەیلیست دیاریکرا ({count} ڤیدیۆ) - بە فایلی ZIP دادەبەزێت",
+                "prompt_paste": "تکایە بەستەرەکە (Link) لەم شوێنە بنووسە یان پەستای بکە:"
             },
             ar: {
                 "nav_home": "الرئيسية",
@@ -519,7 +554,7 @@
                 "yt_title": "تحميل فيديوهات يوتيوب",
                 "input_ph": "ألصق رابط الفيديو هنا...",
                 "btn_paste": "لصق",
-                "trim_title": "قص الفيديو (اختياري)",
+                "trim_title": "قص الفيديو (اختياري) ✂️",
                 "opt_best": "أفضل جودة (تلقائي)",
                 "opt_mp3": "صوت فقط (MP3)",
                 "btn_dl": "تحميل",
@@ -531,7 +566,8 @@
                 "msg_done": "اكتمل!",
                 "msg_err": "حدث خطأ أثناء التحميل.",
                 "msg_server": "خطأ في الاتصال بالسيرفر!",
-                "playlist_info": "تم التعرّف على قائمة تشغيل ({count} فيديو) - سيتم التحميل بصيغة ZIP"
+                "playlist_info": "تم التعرّف على قائمة تشغيل ({count} فيديو) - سيتم التحميل بصيغة ZIP",
+                "prompt_paste": "الرجاء لصق رابط الفيديو هنا:"
             }
         };
 
@@ -565,19 +601,38 @@
         }
 
         async function pasteFromClipboard() {
-            try {
-                if (navigator.clipboard && navigator.clipboard.readText) {
+            const inputField = document.getElementById('videoUrl');
+
+            if (navigator.clipboard && navigator.clipboard.readText) {
+                try {
                     const text = await navigator.clipboard.readText();
-                    document.getElementById('videoUrl').value = text;
+                    if (text) {
+                        inputField.value = text;
+                        checkVideoInfo();
+                        return;
+                    }
+                } catch (err) {
+                    console.warn("Clipboard API failed or blocked, trying fallbacks...");
+                }
+            }
+
+            try {
+                inputField.focus();
+                inputField.select();
+                const successful = document.execCommand('paste');
+                if (successful && inputField.value) {
                     checkVideoInfo();
-                } else {
-                    throw new Error("Clipboard API not supported");
+                    return;
                 }
             } catch (err) {
-                const input = document.getElementById('videoUrl');
-                input.focus();
-                input.select();
-                alert('Please paste the link using Ctrl+V (or Command+V).');
+                console.warn("execCommand failed...");
+            }
+
+            const promptMsg = translations[currentLang]["prompt_paste"] || "Please paste the link here:";
+            const manualText = prompt(promptMsg);
+            if (manualText) {
+                inputField.value = manualText.trim();
+                checkVideoInfo();
             }
         }
 
@@ -592,8 +647,12 @@
 
         async function fetchMetadata(url) {
             const previewCard = document.getElementById('previewCard');
+            const skeletonCard = document.getElementById('skeletonCard');
             const qualitySelect = document.getElementById('qualitySelect');
             const playlistBadge = document.getElementById('playlistBadge');
+
+            previewCard.style.display = 'none';
+            skeletonCard.style.display = 'block';
 
             try {
                 const response = await fetch('/get-info', {
@@ -627,11 +686,37 @@
                     }
                     qualitySelect.innerHTML += `<option value="mp3">${translations[currentLang]["opt_mp3"]}</option>`;
 
+                    skeletonCard.style.display = 'none';
                     previewCard.style.display = 'block';
+                } else {
+                    skeletonCard.style.display = 'none';
                 }
             } catch (e) {
+                skeletonCard.style.display = 'none';
                 previewCard.style.display = 'none';
             }
+        }
+
+        function triggerSuccessGlow() {
+            const card = document.getElementById('mainContainer');
+            card.style.transform = 'scale(1.02)';
+            card.style.borderColor = '#10b981';
+            card.style.boxShadow = '0 0 50px rgba(16, 185, 129, 0.5)';
+
+            // Confetti Animation Effect
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+
+            setTimeout(() => {
+                card.style.transform = 'scale(1)';
+                card.style.borderColor = 'var(--border)';
+                card.style.boxShadow = '0 30px 60px rgba(0, 0, 0, 0.4)';
+            }, 1500);
         }
 
         async function startDownload() {
@@ -687,6 +772,7 @@
                 if (response.ok && data.download_url) {
                     progressBar.style.width = '100%';
                     progressBar.innerText = translations[currentLang]["msg_done"];
+                    triggerSuccessGlow();
                     eventSource.close();
 
                     window.location.href = data.download_url;
@@ -707,7 +793,6 @@
             changeLanguage(savedLang);
         });
     </script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <footer class="f2ter">
         © 2026 Professional Web Video Downloader<br>
         Powered by A. Coder <a href="https://shorturl.at/AmZ4P" class="fv">FV-Downloader</a>
