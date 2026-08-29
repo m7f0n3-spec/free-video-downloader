@@ -17,13 +17,9 @@ from flask_limiter import Limiter
 
 app = Flask(__name__)
 
-# --- وەرگرتنی کلیدی نهێنی بۆ پاراستنی لاپەڕەی ئەدمین ---
 ADMIN_SECRET_KEY = os.getenv('ADMIN_SECRET_KEY', 'mysecret123')
-
-# --- لیستی IPیە بلۆککراوەکان (IP Blacklist) ---
 BANNED_IPS = set(os.getenv('BANNED_IPS', '').split(',')) if os.getenv('BANNED_IPS') else set()
 
-# --- لیستی پراکسی بۆ Rotation ---
 PROXY_URL = os.getenv('PROXY_URL')
 PROXY_LIST_ENV = os.getenv('PROXY_LIST')
 PROXIES = [p.strip() for p in PROXY_LIST_ENV.split(',')] if PROXY_LIST_ENV else ([PROXY_URL] if PROXY_URL else [])
@@ -40,7 +36,6 @@ def get_client_ip():
         return forwarded_for.split(',')[0].strip()
     return request.remote_addr or '127.0.0.1'
 
-# --- API Rate Limiting ---
 limiter = Limiter(
     get_client_ip,
     app=app,
@@ -88,7 +83,6 @@ if not os.path.exists(DOWNLOAD_DIR):
     os.makedirs(DOWNLOAD_DIR)
 
 def auto_cleanup_downloads_folder():
-    """سڕینەوەی فایلی کۆن بۆ پاراستنی هارد و بیرگەی سێرڤەر"""
     while True:
         try:
             now = time.time()
@@ -158,12 +152,14 @@ def fetch_po_token():
     return None
 
 def get_base_ydl_opts(url=None):
-    yt_client_config = ['tv', 'android', 'ios', 'mweb']
+    yt_client_config = ['web', 'mweb', 'android', 'ios']
     yt_extractor_args = {
-        'youtube': {'player_client': yt_client_config},
+        'youtube': {
+            'player_client': yt_client_config,
+        },
         'tiktok': {
-            'app_version': '34.0.0',
-            'manifest_app_version': '34.0.0',
+            'app_version': '35.1.1',
+            'manifest_app_version': '35.1.1',
             'download_host': 'v16-webapp-prime.tiktok.com'
         }
     }
@@ -173,7 +169,7 @@ def get_base_ydl_opts(url=None):
         yt_extractor_args['youtube']['po_token'] = [current_po_token]
 
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.9',
     }
@@ -193,8 +189,9 @@ def get_base_ydl_opts(url=None):
         'geo_bypass': True,
         'http_headers': headers,
         'extractor_args': yt_extractor_args,
-        'retries': 5, # Error Handling: دووبارەکردنەوەی ئۆتۆماتیکی لە کاتی پچڕان
-        'fragment_retries': 5
+        'js_runtimes': {'node': {}},  # ڕێکخستنی دروست بۆ نۆد لە yt-dlp
+        'retries': 10,
+        'fragment_retries': 10
     }
     
     if os.path.exists(COOKIE_PATH):
@@ -207,19 +204,6 @@ def get_base_ydl_opts(url=None):
     return opts
 
 progress_queues = {}
-
-# --- PWA Service Worker & Manifest Endpoints ---
-@app.route('/service-worker.js')
-def service_worker():
-    return send_from_directory('static', 'service-worker.js')
-
-@app.route('/health')
-def health_check():
-    return jsonify({
-        "status": "healthy",
-        "uptime": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "storage_ok": os.path.exists(DOWNLOAD_DIR)
-    }), 200
 
 @app.route('/')
 def index():
@@ -241,28 +225,6 @@ def instagram():
 def tiktok():
     return render_template('tiktok.html')
 
-@app.route('/admin/ips')
-def view_admin_ips():
-    key = request.args.get('key')
-    if key != ADMIN_SECRET_KEY:
-        return jsonify({"error": "Unauthorized"}), 403
-    return jsonify({
-        "total_requests": len(visitor_logs),
-        "banned_ips": list(BANNED_IPS),
-        "logs": visitor_logs
-    })
-
-@app.route('/admin/ban', methods=['POST'])
-def ban_ip():
-    data = request.json or {}
-    key = data.get('key')
-    ip_to_ban = data.get('ip')
-    if key != ADMIN_SECRET_KEY or not ip_to_ban:
-        return jsonify({"error": "Unauthorized or missing IP"}), 403
-    
-    BANNED_IPS.add(ip_to_ban.strip())
-    return jsonify({"success": True, "banned": ip_to_ban})
-
 @app.route('/downloads/<path:filename>')
 def serve_downloaded_file(filename):
     return send_from_directory(DOWNLOAD_DIR, filename, as_attachment=True, download_name=filename)
@@ -283,7 +245,6 @@ def progress_stream(task_id):
                     break
             except queue.Empty:
                 yield f"data: {json.dumps({'percent': 0, 'status': 'keep-alive'})}\n\n"
-
     return Response(event_stream(), mimetype="text/event-stream")
 
 @app.route('/get-info', methods=['POST'])
@@ -291,60 +252,31 @@ def progress_stream(task_id):
 def get_video_info():
     data = request.json or {}
     url = data.get('url')
-
     if not url:
         return jsonify({'error': 'URL is required'}), 400
 
     ydl_opts = get_base_ydl_opts(url)
+    ydl_opts['skip_download'] = True
 
-    # Error Handling validation
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
-            
             is_playlist = 'entries' in info
-            playlist_count = len(info.get('entries', [])) if is_playlist else 0
-
-            duration_sec = info.get('duration')
-            if duration_sec:
-                mins, secs = divmod(int(duration_sec), 60)
-                hrs, mins = divmod(mins, 60)
-                duration_str = f"{hrs:02d}:{mins:02d}:{secs:02d}" if hrs else f"{mins:02d}:{secs:02d}"
-            else:
-                duration_str = info.get('duration_string', 'N/A')
-
-            formats_available = []
-            if not is_playlist and 'formats' in info:
-                seen_heights = set()
-                for fmt in info['formats']:
-                    height = fmt.get('height')
-                    filesize = fmt.get('filesize') or fmt.get('filesize_approx')
-                    size_mb = round(filesize / (1024 * 1024), 1) if filesize else None
-                    size_str = f" ({size_mb} MB)" if size_mb else ""
-                    
-                    if height and height not in seen_heights and height >= 240:
-                        seen_heights.add(height)
-                        formats_available.append({
-                            'format_id': f"{height}p",
-                            'label': f"{height}p{size_str}"
-                        })
-                formats_available.sort(key=lambda x: int(x['label'].split('p')[0]), reverse=True)
+            
+            thumbnail_url = info.get('thumbnail', '')
+            if not thumbnail_url and 'thumbnails' in info and info['thumbnails']:
+                thumbnail_url = info['thumbnails'][-1].get('url', '')
+            
+            if not thumbnail_url and 'id' in info:
+                thumbnail_url = f"https://i.ytimg.com/vi/{info['id']}/hqdefault.jpg"
 
             return jsonify({
                 'title': info.get('title', 'Media'),
-                'thumbnail': info.get('thumbnail', '') if not is_playlist else (info['entries'][0].get('thumbnail') if info['entries'] else ''),
-                'duration': duration_str,
-                'uploader': info.get('uploader', info.get('extractor_key', 'Unknown')),
-                'qualities': formats_available,
-                'is_playlist': is_playlist,
-                'playlist_count': playlist_count
+                'thumbnail': thumbnail_url,
+                'is_playlist': is_playlist
             })
-    except yt_dlp.utils.DownloadError as de:
-        print(f"YTDLP DownloadError: {str(de)}")
-        return jsonify({'error': 'Invalid URL or video is private/unsupported.'}), 400
     except Exception as e:
-        print(f"Fetch Error: {str(e)}")
-        return jsonify({'error': 'Failed to fetch video information from server.'}), 500
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/download', methods=['POST'])
 @limiter.limit("10 per minute")
@@ -363,25 +295,12 @@ def download_video():
     progress_queues[task_id] = q
 
     postprocessors = []
-
+    
     if format_type == 'mp3':
-        format_spec = 'ba/b'
-        postprocessors.append({
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
-            'preferredquality': '128',
-        })
-    elif format_type.endswith('p'):
-        height = format_type.replace('p', '')
-        format_spec = f'b[height<={height}]/bv[height<={height}]+ba/b'
+        format_spec = 'bestaudio/best'
+        postprocessors.append({'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3', 'preferredquality': '128'})
     else:
-        format_spec = 'b/best'
-
-    if start_time or end_time:
-        postprocessors.append({
-            'key': 'FFmpegVideoConvertor',
-            'preferedformat': 'mp4'
-        })
+        format_spec = 'best/bestvideo+bestaudio'
 
     def progress_hook(d):
         if d['status'] == 'downloading':
@@ -396,79 +315,45 @@ def download_video():
             q.put({'percent': 95, 'status': 'uploading'})
 
     task_download_dir = os.path.join(DOWNLOAD_DIR, task_id)
-    if not os.path.exists(task_download_dir):
-        os.makedirs(task_download_dir)
+    os.makedirs(task_download_dir, exist_ok=True)
 
     ydl_opts = get_base_ydl_opts(url)
     ydl_opts.update({
         'outtmpl': os.path.join(task_download_dir, '%(title)s_%(id)s.%(ext)s'),
         'format': format_spec,
+        'merge_output_format': 'mp4' if format_type != 'mp3' else None,
         'postprocessors': postprocessors,
         'progress_hooks': [progress_hook]
     })
 
     if start_time or end_time:
-        def set_download_range(info_dict, ydl):
-            return [{'start_time': float(start_time or 0), 'end_time': float(end_time or info_dict.get('duration', 0))}]
-        ydl_opts['download_ranges'] = set_download_range
+        try:
+            s_val = float(start_time) if start_time else 0.0
+            e_val = float(end_time) if end_time else 999999.0
+            ydl_opts['download_ranges'] = yt_dlp.utils.download_range_func(None, [(s_val, e_val)])
+        except Exception as e:
+            print(f"Range Error: {e}")
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
+            downloaded_files = os.listdir(task_download_dir)
+            if not downloaded_files:
+                raise Exception("No file downloaded")
             
-            is_playlist = 'entries' in info
-            
-            if is_playlist:
-                zip_filename = f"{sanitize_filename(info.get('title', 'playlist'))}_{task_id}.zip"
-                zip_path = os.path.join(DOWNLOAD_DIR, zip_filename)
-
-                with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-                    for root, _, files in os.walk(task_download_dir):
-                        for file in files:
-                            zipf.write(os.path.join(root, file), file)
-                
-                final_file_path = zip_path
-                file_key = zip_filename
-            else:
-                downloaded_files = os.listdir(task_download_dir)
-                if not downloaded_files:
-                    raise Exception("No file downloaded by core engine")
-                
-                single_file = os.path.join(task_download_dir, downloaded_files[0])
-                safe_title = sanitize_filename(info.get('title', 'video'))
-                ext = 'mp3' if format_type == 'mp3' else single_file.split('.')[-1]
-                file_key = f"{safe_title}_{info.get('id', 'media')}.{ext}"
-                final_file_path = os.path.join(DOWNLOAD_DIR, file_key)
-                os.rename(single_file, final_file_path)
-
+            single_file = os.path.join(task_download_dir, downloaded_files[0])
+            safe_title = sanitize_filename(info.get('title', 'video'))
+            ext = 'mp3' if format_type == 'mp3' else single_file.split('.')[-1]
+            file_key = f"{safe_title}_{info.get('id', 'media')}.{ext}"
+            final_file_path = os.path.join(DOWNLOAD_DIR, file_key)
+            os.rename(single_file, final_file_path)
             shutil.rmtree(task_download_dir, ignore_errors=True)
 
-            if s3_client:
-                s3_client.upload_file(
-                    Filename=final_file_path,
-                    Bucket=R2_BUCKET_NAME,
-                    Key=file_key
-                )
-                download_url = s3_client.generate_presigned_url(
-                    'get_object',
-                    Params={
-                        'Bucket': R2_BUCKET_NAME,
-                        'Key': file_key,
-                        'ResponseContentDisposition': f'attachment; filename="{file_key}"'
-                    },
-                    ExpiresIn=3600
-                )
-                q.put({'percent': 100, 'status': 'completed'})
-                return jsonify({'download_url': download_url})
-            else:
-                q.put({'percent': 100, 'status': 'completed'})
-                return jsonify({'download_url': f"/downloads/{os.path.basename(final_file_path)}"})
-
+            q.put({'percent': 100, 'status': 'completed'})
+            return jsonify({'download_url': f"/downloads/{file_key}"})
     except Exception as e:
-        print(f"Download Error Trace: {str(e)}")
         q.put({'percent': 0, 'status': 'error', 'error': str(e)})
         return jsonify({'error': str(e)}), 500
-
     finally:
         if task_id in progress_queues:
             del progress_queues[task_id]
