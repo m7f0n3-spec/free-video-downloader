@@ -180,10 +180,9 @@ def fetch_po_token():
 
 
 def get_base_ydl_opts(url=None):
-  # بەکارهێنانی کڵێنتی بەهێز بۆ هەموو پلاتفۆرمەکان بە مەبەستی ڕێگری لە بلۆکبوون
   yt_extractor_args = {
       'youtube': {
-          'player_client': ['android', 'ios', 'web'],
+          'player_client': ['android', 'ios'],
       },
       'tiktok': {
           'app_version': '35.1.1',
@@ -196,46 +195,19 @@ def get_base_ydl_opts(url=None):
   if current_po_token:
     yt_extractor_args['youtube']['po_token'] = [current_po_token]
 
-  # یوزەر-ئێجنتی مۆبایل و تابلێت بۆ ڕێگری کردن لە ناسینەوەی سێرڤەر و بلۆکبوون
-  headers = {
-      'User-Agent': (
-          'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) '
-          'AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 '
-          'Mobile/15E148 Safari/604.1'
-      ),
-      'Accept': (
-          'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8'
-      ),
-      'Accept-Language': 'en-US,en;q=0.9',
-      'Sec-Fetch-Dest': 'document',
-      'Sec-Fetch-Mode': 'navigate',
-      'Sec-Fetch-Site': 'none',
-      'Sec-Fetch-User': '?1',
-      'Upgrade-Insecure-Requests': '1',
-  }
-
-  if url:
-    if 'instagram.com' in url:
-      headers['Referer'] = 'https://www.instagram.com/'
-    elif 'facebook.com' in url or 'fb.watch' in url:
-      headers['Referer'] = 'https://www.facebook.com/'
-    elif 'tiktok.com' in url:
-      headers['Referer'] = 'https://www.tiktok.com/'
-    elif 'youtube.com' in url or 'youtu.be' in url:
-      headers['Referer'] = 'https://www.youtube.com/'
-
   opts = {
       'quiet': True,
       'no_warnings': True,
       'nocheckcertificate': True,
       'geo_bypass': True,
-      'http_headers': headers,
       'extractor_args': yt_extractor_args,
       'js_runtimes': {'node': {}},
       'concurrent_fragment_downloads': 4,
-      'retries': 15,
-      'fragment_retries': 15,
-      'socket_timeout': 30,
+      'retries': 20,
+      'fragment_retries': 20,
+      'socket_timeout': 40,
+      # بەکارهێنانی بەهێزترین شێوازی تێپەڕاندنی فایەروۆڵ بە curl_cffi
+      'impersonate': 'chrome120',
   }
 
   if os.path.exists(COOKIE_PATH):
