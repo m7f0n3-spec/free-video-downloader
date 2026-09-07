@@ -180,10 +180,10 @@ def fetch_po_token():
 
 
 def get_base_ydl_opts(url=None):
-  yt_client_config = ['web', 'mweb', 'android', 'ios']
+  # بەکارهێنانی کڵێنتی بەهێز بۆ هەموو پلاتفۆرمەکان بە مەبەستی ڕێگری لە بلۆکبوون
   yt_extractor_args = {
       'youtube': {
-          'player_client': yt_client_config,
+          'player_client': ['android', 'ios', 'web'],
       },
       'tiktok': {
           'app_version': '35.1.1',
@@ -196,20 +196,17 @@ def get_base_ydl_opts(url=None):
   if current_po_token:
     yt_extractor_args['youtube']['po_token'] = [current_po_token]
 
+  # یوزەر-ئێجنتی مۆبایل و تابلێت بۆ ڕێگری کردن لە ناسینەوەی سێرڤەر و بلۆکبوون
   headers = {
       'User-Agent': (
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,'
-          ' like Gecko) Chrome/125.0.0.0 Safari/537.36'
+          'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) '
+          'AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 '
+          'Mobile/15E148 Safari/604.1'
       ),
       'Accept': (
           'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8'
       ),
       'Accept-Language': 'en-US,en;q=0.9',
-      'Sec-Ch-Ua': (
-          '"Not/A)Brand";v="8", "Chromium";v="125", "Google Chrome";v="125"'
-      ),
-      'Sec-Ch-Ua-Mobile': '?0',
-      'Sec-Ch-Ua-Platform': '"Windows"',
       'Sec-Fetch-Dest': 'document',
       'Sec-Fetch-Mode': 'navigate',
       'Sec-Fetch-Site': 'none',
@@ -222,34 +219,24 @@ def get_base_ydl_opts(url=None):
       headers['Referer'] = 'https://www.instagram.com/'
     elif 'facebook.com' in url or 'fb.watch' in url:
       headers['Referer'] = 'https://www.facebook.com/'
-      headers['User-Agent'] = (
-          'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) '
-          'AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 '
-          'Mobile/15E148 Safari/604.1'
-      )
     elif 'tiktok.com' in url:
       headers['Referer'] = 'https://www.tiktok.com/'
+    elif 'youtube.com' in url or 'youtu.be' in url:
+      headers['Referer'] = 'https://www.youtube.com/'
 
-    opts = {
-        'quiet': True,
-        'no_warnings': True,
-        'nocheckcertificate': True,
-        'geo_bypass': True,
-        'cookiefile': 'cookies.txt',  # <--- ئەم دێڕە زیاد بکە
-        'http_headers': headers,
-        'extractor_args': yt_extractor_args,
-        'js_runtimes': {'node': {}},
-        'concurrent_fragment_downloads': 4,
-        'retries': 10,
-        'fragment_retries': 10,
-        'socket_timeout': 30,
-        'extractor_args': {'youtube': {'player_client': ['android', 'web']}},
-        'extractor_args': {
-        'youtube': {
-            'player_client': ['android', 'ios']
-        }
-        },
-    }
+  opts = {
+      'quiet': True,
+      'no_warnings': True,
+      'nocheckcertificate': True,
+      'geo_bypass': True,
+      'http_headers': headers,
+      'extractor_args': yt_extractor_args,
+      'js_runtimes': {'node': {}},
+      'concurrent_fragment_downloads': 4,
+      'retries': 15,
+      'fragment_retries': 15,
+      'socket_timeout': 30,
+  }
 
   if os.path.exists(COOKIE_PATH):
     opts['cookiefile'] = COOKIE_PATH
