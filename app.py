@@ -86,7 +86,7 @@ def auto_cleanup_downloads_folder():
     while True:
         try:
             now = time.time()
-            max_age_seconds = 30 * 60
+            max_age_seconds = 10 * 60  # کەمکردنەوەی بۆ ١٠ خولەک بۆ پاراستنی پانتایی دیسک
             if os.path.exists(DOWNLOAD_DIR):
                 for filename in os.listdir(DOWNLOAD_DIR):
                     file_path = os.path.join(DOWNLOAD_DIR, filename)
@@ -189,7 +189,8 @@ def get_base_ydl_opts(url=None):
         'geo_bypass': True,
         'http_headers': headers,
         'extractor_args': yt_extractor_args,
-        'js_runtimes': {'node': {}},  # ڕێکخستنی دروست بۆ نۆد لە yt-dlp
+        'js_runtimes': {'node': {}},
+        'concurrent_fragment_downloads': 4,  # زیادکردنی خێرایی دابەزاندن بە پارچەکردن
         'retries': 10,
         'fragment_retries': 10
     }
@@ -262,6 +263,7 @@ def get_video_info():
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             is_playlist = 'entries' in info
+            duration = info.get('duration', 0) or 0
             
             thumbnail_url = info.get('thumbnail', '')
             if not thumbnail_url and 'thumbnails' in info and info['thumbnails']:
@@ -273,7 +275,8 @@ def get_video_info():
             return jsonify({
                 'title': info.get('title', 'Media'),
                 'thumbnail': thumbnail_url,
-                'is_playlist': is_playlist
+                'is_playlist': is_playlist,
+                'duration': duration
             })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -290,6 +293,22 @@ def download_video():
 
     if not url:
         return jsonify({'error': 'URL is required'}), 400
+
+    # پشکنینی درێژی ڤیدیۆ پێش دابەزاندن (سنووری ١ کاتژمێر = 3600 چرکە)
+    # ئەگەر بەکارهێنەر بڕینی دیاری نەکردبێت و ڤیدیۆکە لە ١ کاتژمێر درێژتر بێت
+    if not start_time and not end_time:
+        try:
+            check_opts = get_base_ydl_opts(url)
+            check_opts['skip_download'] = True
+            with yt_dlp.YoutubeDL(check_opts) as ydl:
+                info_meta = ydl.extract_info(url, download=False)
+                dur = info_meta.get('duration', 0) or 0
+                if dur > 3600:
+                    return jsonify({
+                        'error': 'ڤیدیۆکە لە ١ کاتژمێر درێژترە و ناتوانرێت بە تەواوی دابەزێنرێت. دەتوانیت بە بەکارهێنانی تایبەتمەندی بڕین (Start/End Time) بەشێکی دابەزێنیت.'
+                    }), 400
+        except Exception as e:
+            print(f"Duration Check Error: {e}")
 
     q = queue.Queue()
     progress_queues[task_id] = q
