@@ -227,7 +227,7 @@ def get_base_ydl_opts(url=None):
           'AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 '
           'Mobile/15E148 Safari/604.1'
       )
-    elif 'tiktok.com' in url:
+    elif 'tiktok.co' in url:
       headers['Referer'] = 'https://www.tiktok.com/'
 
   opts = {
