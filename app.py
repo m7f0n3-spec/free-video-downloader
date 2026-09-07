@@ -105,9 +105,7 @@ def auto_cleanup_downloads_folder():
   while True:
     try:
       now = time.time()
-      max_age_seconds = (
-          10 * 60
-      )  # کەمکردنەوەی بۆ ١٠ خولەک بۆ پاراستنی پانتایی دیسک
+      max_age_seconds = 10 * 60
       if os.path.exists(DOWNLOAD_DIR):
         for filename in os.listdir(DOWNLOAD_DIR):
           file_path = os.path.join(DOWNLOAD_DIR, filename)
@@ -243,6 +241,7 @@ def get_base_ydl_opts(url=None):
       'concurrent_fragment_downloads': 4,
       'retries': 10,
       'fragment_retries': 10,
+      'impersonate': 'chrome',  # زیادکردنی ئەم تایبەتمەندییە بۆ ڕێگریکردن لە بلۆککردن و کێشەی فەیسبووک
   }
 
   if os.path.exists(COOKIE_PATH):
@@ -437,7 +436,7 @@ def download_video():
       single_file = os.path.join(task_download_dir, downloaded_files[0])
       safe_title = sanitize_filename(info.get('title', 'video'))
       ext = 'mp3' if format_type == 'mp3' else single_file.split('.')[-1]
-      file_key = f"{safe_title}_{info.get('id', 'media')}.{ext}"
+      file_key = f'{safe_title}_{info.get("id", "media")}.{ext}'
       final_file_path = os.path.join(DOWNLOAD_DIR, file_key)
       os.rename(single_file, final_file_path)
       shutil.rmtree(task_download_dir, ignore_errors=True)
