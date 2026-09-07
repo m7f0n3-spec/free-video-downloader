@@ -231,18 +231,18 @@ def get_base_ydl_opts(url=None):
       headers['Referer'] = 'https://www.tiktok.com/'
 
   opts = {
-      'quiet': True,
-      'no_warnings': True,
-      'nocheckcertificate': True,
-      'geo_bypass': True,
-      'http_headers': headers,
-      'extractor_args': yt_extractor_args,
-      'js_runtimes': {'node': {}},
-      'concurrent_fragment_downloads': 4,
-      'retries': 10,
-      'fragment_retries': 10,
-      'impersonate': 'chrome',  # زیادکردنی ئەم تایبەتمەندییە بۆ ڕێگریکردن لە بلۆککردن و کێشەی فەیسبووک
-  }
+        'quiet': True,
+        'no_warnings': True,
+        'nocheckcertificate': True,
+        'geo_bypass': True,
+        'http_headers': headers,
+        'extractor_args': yt_extractor_args,
+        'js_runtimes': {'node': {}},
+        'concurrent_fragment_downloads': 4,
+        'retries': 10,
+        'fragment_retries': 10,
+        'impersonate': 'Chrome-133',  # گۆڕینی بۆ ناوێکی ڕاستەقینە و بەردەست لە لیستەکەدا
+    }
 
   if os.path.exists(COOKIE_PATH):
     opts['cookiefile'] = COOKIE_PATH
