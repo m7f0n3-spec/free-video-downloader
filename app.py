@@ -242,6 +242,14 @@ def get_base_ydl_opts(url=None):
         'concurrent_fragment_downloads': 4,
         'retries': 10,
         'fragment_retries': 10,
+        'socket_timeout': 30,
+        'extractor_args': {'youtube': {'player_client': ['android', 'web']}},
+        'proxy': 'http://USER:PASSWORD@IP:PORT',
+        'extractor_args': {
+        'youtube': {
+            'player_client': ['android', 'ios']
+        }
+        },
     }
 
   if os.path.exists(COOKIE_PATH):
