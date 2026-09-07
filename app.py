@@ -180,9 +180,11 @@ def fetch_po_token():
 
 
 def get_base_ydl_opts(url=None):
+  # بەهێزکردنی کڵێنتەکانی یوتیوب بۆ تێپەڕاندنی بلۆکی سێرვەر و داواکارییەکان
   yt_extractor_args = {
       'youtube': {
-          'player_client': ['android', 'ios'],
+          'player_client': ['android', 'web'],
+          'player_skip': ['webpage'],
       },
       'tiktok': {
           'app_version': '35.1.1',
@@ -203,9 +205,9 @@ def get_base_ydl_opts(url=None):
       'extractor_args': yt_extractor_args,
       'js_runtimes': {'node': {}},
       'concurrent_fragment_downloads': 4,
-      'retries': 15,
-      'fragment_retries': 15,
-      'socket_timeout': 30,
+      'retries': 20,
+      'fragment_retries': 20,
+      'socket_timeout': 35,
   }
 
   if os.path.exists(COOKIE_PATH):
@@ -415,6 +417,6 @@ def download_video():
       del progress_queues[task_id]
 
 
-if __name__ == '__main__':
+if __name__ == 'main':
   port = int(os.environ.get('PORT', 8080))
   app.run(host='0.0.0.0', port=port, debug=False)
