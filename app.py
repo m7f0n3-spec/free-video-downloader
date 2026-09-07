@@ -241,7 +241,6 @@ def get_base_ydl_opts(url=None):
         'concurrent_fragment_downloads': 4,
         'retries': 10,
         'fragment_retries': 10,
-        'impersonate': 'Chrome-133',  # دڵنیابە لەوەی ئەمە لەوێیە
     }
 
   if os.path.exists(COOKIE_PATH):
