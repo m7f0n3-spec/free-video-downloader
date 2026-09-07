@@ -180,10 +180,9 @@ def fetch_po_token():
 
 
 def get_base_ydl_opts(url=None):
-  # ڕێکخستنی خێر و متمانەپێکراو بۆ یوتیوب و پلاتفۆرمەکانی تر
   yt_extractor_args = {
       'youtube': {
-          'player_client': ['android', 'ios'],
+          'player_client': ['mweb', 'android'],
       },
       'tiktok': {
           'app_version': '35.1.1',
@@ -204,9 +203,9 @@ def get_base_ydl_opts(url=None):
       'extractor_args': yt_extractor_args,
       'js_runtimes': {'node': {}},
       'concurrent_fragment_downloads': 4,
-      'retries': 3,  # کەمکردنەوەی دووبارەکردنەوە بۆ خێرا وەڵامدانەوە
-      'fragment_retries': 3,
-      'socket_timeout': 12,  # کاتی چاوەڕوانی کورتکراوەتەوە بۆ ئەوەی خێرا ئیرۆر بدات ئەگەر کێشە هەبێت
+      'retries': 5,
+      'fragment_retries': 5,
+      'socket_timeout': 15,
   }
 
   if os.path.exists(COOKIE_PATH):
