@@ -203,11 +203,9 @@ def get_base_ydl_opts(url=None):
       'extractor_args': yt_extractor_args,
       'js_runtimes': {'node': {}},
       'concurrent_fragment_downloads': 4,
-      'retries': 20,
-      'fragment_retries': 20,
-      'socket_timeout': 40,
-      # بەکارهێنانی بەهێزترین شێوازی تێپەڕاندنی فایەروۆڵ بە curl_cffi
-      'impersonate': 'chrome120',
+      'retries': 15,
+      'fragment_retries': 15,
+      'socket_timeout': 30,
   }
 
   if os.path.exists(COOKIE_PATH):
