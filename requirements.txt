@@ -12,3 +12,5 @@ urllib3==2.7.0
 websockets==17.1
 yt-dlp==2026.8.19
 yt-dlp-ejs==0.8.0
+botocore
+boto3
