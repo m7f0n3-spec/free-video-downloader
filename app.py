@@ -230,11 +230,12 @@ def get_base_ydl_opts(url=None):
     elif 'tiktok.com' in url:
       headers['Referer'] = 'https://www.tiktok.com/'
 
-  opts = {
+    opts = {
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
         'geo_bypass': True,
+        'cookiefile': 'cookies.txt',  # <--- ئەم دێڕە زیاد بکە
         'http_headers': headers,
         'extractor_args': yt_extractor_args,
         'js_runtimes': {'node': {}},
