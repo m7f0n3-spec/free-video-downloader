@@ -25,8 +25,8 @@ BANNED_IPS = (
     else set()
 )
 
-# پڕۆکسی جێگیر (Webshare)
-WEB_PROXY = "http://ockaayuq:f12eoampzbrs@p.webshare.io:80/"
+# پڕۆکسی نوێی سەنتەر کراوە
+WEB_PROXY = 'http://ockaayuq:f12eoampzbrs@31.59.20.176:6754/'
 
 PROXY_URL = os.getenv('PROXY_URL', WEB_PROXY)
 PROXY_LIST_ENV = os.getenv('PROXY_LIST')
