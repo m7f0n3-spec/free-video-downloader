@@ -13,6 +13,7 @@ from botocore.config import Config
 import boto3
 from flask import Flask, Response, jsonify, render_template, request, send_from_directory
 from flask_limiter import Limiter
+import requests
 import yt_dlp
 
 app = Flask(__name__)
@@ -24,7 +25,10 @@ BANNED_IPS = (
     else set()
 )
 
-PROXY_URL = os.getenv('PROXY_URL')
+# پڕۆکسی جێگیر (Webshare)
+WEB_PROXY = "http://ockaayuq:f12eoampzbrs@p.webshare.io:80/"
+
+PROXY_URL = os.getenv('PROXY_URL', WEB_PROXY)
 PROXY_LIST_ENV = os.getenv('PROXY_LIST')
 PROXIES = (
     [p.strip() for p in PROXY_LIST_ENV.split(',')]
