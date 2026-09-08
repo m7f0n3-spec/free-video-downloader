@@ -182,7 +182,7 @@ def fetch_po_token():
 def get_base_ydl_opts(url=None):
   yt_extractor_args = {
       'youtube': {
-          'player_client': ['web', 'mweb'],
+          'player_client': ['android'],
       },
       'tiktok': {
           'app_version': '35.1.1',
@@ -203,9 +203,16 @@ def get_base_ydl_opts(url=None):
       'extractor_args': yt_extractor_args,
       'js_runtimes': {'node': {}},
       'concurrent_fragment_downloads': 4,
-      'retries': 10,
-      'fragment_retries': 10,
-      'socket_timeout': 20,
+      'retries': 15,
+      'fragment_retries': 15,
+      'socket_timeout': 30,
+      'http_headers': {
+          'User-Agent': (
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+              ' (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+          ),
+          'Accept-Language': 'en-US,en;q=0.9',
+      },
   }
 
   if os.path.exists(COOKIE_PATH):
