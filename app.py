@@ -149,6 +149,26 @@ def sanitize_filename(title, max_length=60):
   return clean_title if clean_title else 'video'
 
 
+def parse_time_to_seconds(time_str):
+  if not time_str:
+    return None
+  time_str = str(time_str).strip()
+  try:
+    if '.' in time_str or time_str.replace('.', '', 1).isdigit():
+      return float(time_str)
+
+    parts = time_str.split(':')
+    parts = [float(p) for p in parts]
+
+    if len(parts) == 3:
+      return parts[0] * 3600 + parts[1] * 60 + parts[2]
+    elif len(parts) == 2:
+      return parts[0] * 60 + parts[1]
+  except Exception as e:
+    print(f'Time Parse Error: {e}')
+  return None
+
+
 COOKIE_PATH = os.path.join(os.path.dirname(__file__), 'cookies.txt')
 
 if COOKIES_CONTENT:
@@ -308,11 +328,30 @@ def get_video_info():
       if not thumbnail_url and 'id' in info:
         thumbnail_url = f"https://i.ytimg.com/vi/{info['id']}/hqdefault.jpg"
 
+      # هێنانی فۆرمات و کوالێتییەکان
+      formats = []
+      if not is_playlist and 'formats' in info:
+        seen_resolutions = set()
+        for f in info['formats']:
+          if f.get('vcodec') != 'none' and f.get('height'):
+            height = f.get('height')
+            res_str = f'{height}p'
+            if res_str not in seen_resolutions and height >= 144:
+              seen_resolutions.add(res_str)
+              formats.append({
+                  'resolution': res_str,
+                  'ext': f.get('ext', 'mp4'),
+              })
+        formats.sort(
+            key=lambda x: int(x['resolution'].replace('p', '')), reverse=True
+        )
+
       return jsonify({
           'title': info.get('title', 'Media'),
           'thumbnail': thumbnail_url,
           'is_playlist': is_playlist,
           'duration': duration,
+          'formats': formats,
       })
   except Exception as e:
     return jsonify({'error': str(e)}), 500
@@ -364,8 +403,14 @@ def download_video():
         'preferredcodec': 'mp3',
         'preferredquality': '128',
     })
-  else:
+  elif format_type == 'best':
     format_spec = 'best/bestvideo+bestaudio'
+  else:
+    height_val = format_type.replace('p', '')
+    format_spec = (
+        f'bestvideo[height<={height_val}]+bestaudio/best[height<={height_val}]'
+        f'/best'
+    )
 
   def progress_hook(d):
     if d['status'] == 'downloading':
@@ -393,8 +438,8 @@ def download_video():
 
   if start_time or end_time:
     try:
-      s_val = float(start_time) if start_time else 0.0
-      e_val = float(end_time) if end_time else 999999.0
+      s_val = parse_time_to_seconds(start_time) or 0.0
+      e_val = parse_time_to_seconds(end_time) or 999999.0
       ydl_opts['download_ranges'] = yt_dlp.utils.download_range_func(
           None, [(s_val, e_val)]
       )

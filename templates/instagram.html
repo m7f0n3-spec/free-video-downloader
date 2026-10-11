@@ -526,7 +526,7 @@
     </header>
 
     <div class="container" id="mainContainer">
-        <h2 data-i18n="ig_title">Instagram Downloader</h2>
+        <h2 data-i18n="fb_title">Instagram Downloader</h2>
         
         <div class="input-group">
             <input type="text" id="videoUrl" data-i18n-ph="input_ph" placeholder="Paste video link here..." oninput="checkVideoInfo()">
@@ -536,18 +536,23 @@
         <div class="trim-title" data-i18n="trim_title">Trim Video (Optional) ✂️</div>
         <div class="trim-box">
             <div>
-                <label data-i18n="lbl_start">Start Time (Sec)</label>
-                <input type="number" id="startTime" placeholder="0" min="0">
+                <label data-i18n="lbl_start">Start Time </label>
+                <input type="text" id="startTime" name="start_time" placeholder="00:00" class="form-control">
             </div>
             <div>
-                <label data-i18n="lbl_end">End Time (Sec)</label>
-                <input type="number" id="endTime" placeholder="End" min="0">
+                <label data-i18n="lbl_end">End Time </label>
+                <input type="text" id="endTime" name="end_time" placeholder="01:30" class="form-control">
             </div>
         </div>
 
         <div class="options-group">
-            <select id="qualitySelect" class="quality-select">
+            <label>Select Quality / Format</label>
+            <select id="qualitySelect" class="form-control">
                 <option value="best" data-i18n="opt_best">Best Quality (Auto)</option>
+                <option value="1080p">1080p (HD)</option>
+                <option value="720p">720p (HD)</option>
+                <option value="480p">480p (SD)</option>
+                <option value="360p">360p (SD)</option>
                 <option value="mp3" data-i18n="opt_mp3">Audio Only (MP3)</option>
             </select>
         </div>
@@ -564,7 +569,6 @@
             <img id="prevImg" src="" alt="Thumbnail">
             <div class="preview-title" id="prevTitle"></div>
             <div class="preview-meta" id="prevMeta"></div>
-            <div id="playlistBadge" class="playlist-badge" style="display: none;"></div>
         </div>
 
         <div class="progress-bar" id="progressBarContainer">
@@ -580,20 +584,20 @@
                 "nav_facebook": "Facebook",
                 "nav_instagram": "Instagram",
                 "nav_tiktok": "TikTok",
-                "ig_title": "Instagram Downloader",
+                "tt_title": "TikTok Downloader",
                 "input_ph": "Paste video link here...",
                 "btn_paste": "Paste",
                 "trim_title": "Trim Video (Optional) ✂️",
                 "opt_best": "Best Quality (Auto)",
                 "opt_mp3": "Audio Only (MP3)",
                 "btn_dl": "Download",
-                "lbl_start": "Start Time (Sec)",
-                "lbl_end": "End Time (Sec)",
+                "lbl_start": "Start Time (e.g. 01:00)",
+                "lbl_end": "End Time (e.g. 02:30)",
                 "msg_empty": "Please enter a URL!",
                 "msg_done": "Completed!",
                 "msg_err": "Error occurred during download.",
                 "msg_server": "Server Connection Error!",
-                "playlist_info": "Playlist/Carousel Detected ({count} Items) - Will Download as ZIP",
+                "playlist_info": "Photo Slideshow/Carousel ({count} Items) - Will Download as ZIP",
                 "prompt_paste": "Please paste the video link here:"
             },
             ku: {
@@ -602,20 +606,20 @@
                 "nav_facebook": "فەیسبووک",
                 "nav_instagram": "ئینستاگرام",
                 "nav_tiktok": "تیکتۆک",
-                "ig_title": "داگرتنی ڤیدیۆی ئینستاگرام",
+                "tt_title": "داگرتنی ڤیدیۆی تیکتۆک",
                 "input_ph": "لینکی ڤیدیۆکە لێرە دابنێ...",
                 "btn_paste": "پەیست",
                 "trim_title": "بڕینی ڤیدیۆ (ئارەزوومەندانە) ✂️",
                 "opt_best": "باشترین کوالێتی (ئۆتۆ)",
                 "opt_mp3": "تەنها دەنگ (MP3)",
                 "btn_dl": "داونلۆدکردن",
-                "lbl_start": "کاتی دەستپێک (چرکە)",
-                "lbl_end": "کاتی کۆتایی (چرکە)",
+                "lbl_start": "کاتی دەستپێک (بۆ نموونە 01:00)",
+                "lbl_end": "کاتی کۆتایی (بۆ نموونە 02:30)",
                 "msg_empty": "تکایە لینکێک دابنێ!",
                 "msg_done": "تەواوبوو!",
                 "msg_err": "هەڵەیەک ڕوویدا لە کاتی داگرتن.",
                 "msg_server": "کێشەی پەیوەندیکردن بە سێرڤەر!",
-                "playlist_info": "کۆمەڵە مێدیا دیاریکرا ({count} بڕگە) - بە فایلی ZIP دادەبەزێت",
+                "playlist_info": "کۆمەڵە وێنە/مێدیا دیاریکرا ({count} بڕگە) - بە فایلی ZIP دادەبەزێت",
                 "prompt_paste": "تکایە بەستەرەکە (Link) لەم شوێنە بنووسە یان پەستای بکە:"
             },
             ar: {
@@ -624,20 +628,20 @@
                 "nav_facebook": "فيسبوك",
                 "nav_instagram": "إنستغرام",
                 "nav_tiktok": "تيك توك",
-                "ig_title": "تحميل فيديوهات إنستغرام",
+                "tt_title": "تحميل فيديوهات تيك توك",
                 "input_ph": "ألصق رابط الفيديو هنا...",
                 "btn_paste": "لصق",
                 "trim_title": "قص الفيديو (اختياري) ✂️",
                 "opt_best": "أفضل جودة (تلقائي)",
                 "opt_mp3": "صوت فقط (MP3)",
                 "btn_dl": "تحميل",
-                "lbl_start": "وقت البداية (ثانية)",
-                "lbl_end": "وقت النهاية (ثانية)",
+                "lbl_start": "وقت البداية (مثال 01:00)",
+                "lbl_end": "وقت النهاية (مثال 02:30)",
                 "msg_empty": "الرجاء إدخال الرابط!",
                 "msg_done": "اكتمل!",
                 "msg_err": "حدث خطأ أثناء التحميل.",
                 "msg_server": "خطأ في الاتصال بالسيرفر!",
-                "playlist_info": "تم التعرّف على عدة وسائط ({count} عناصر) - سيتم التحميل بصيغة ZIP",
+                "playlist_info": "شرائح صور/وسائط متعددة ({count} عناصر) - سيتم التحميل بصيغة ZIP",
                 "prompt_paste": "الرجاء لصق رابط الفيديو هنا:"
             }
         };
@@ -685,10 +689,8 @@
             const icon = document.getElementById('themeIcon');
             if (!icon) return;
             if (theme === 'light') {
-                // Sun Icon for Light Mode (indicating clicking will switch to dark)
-                icon.innerHTML = '<path d="M12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0-5c-.55 0-1 .45-1 1v2c0 .55.45 1 1 1s1-.45 1-1V4c0-.55-.45-1-1-1zm0 14c-.55 0-1 .45-1 1v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1zm10-7h-2c-.55 0-1 .45-1 1s.45 1 1 1h2c.55 0 1-.45 1-1s-.45-1-1-1zM5 12H3c-.55 0-1 .45-1 1s.45 1 1 1h2c.55 0 1-.45 1-1s-.45-1-1-1zm13.66-7.07c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.41 1.41c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.41-1.41zM6.34 17.66l-1.41 1.41c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.41-1.41c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0zm12.72 1.41l-1.41-1.41c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.41 1.41c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41zM6.34 6.34L4.93 7.76c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.41-1.41c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0z"/>';
+                icon.innerHTML = '<path d="M12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0-5c-.55 0-1 .45-1 1v2c0 .55.45 1 1 1s1-.45 1-1V4c0-.55-.45-1-1-1zm0 14c-.55 0-1 .45-1 1v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1zm10-7h-2c-.55 0-1 .45-1 1s.45 1 1 1h2c.55 0 1-.45 1-1s-.45-1-1-1zM5 12H3c-.55 0-1 .45-1 1s.45 1 1 1h2c.55 0 1-.45 1-1s-.45-1-1-1zm13.66-7.07c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.41 1.41c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.41-1.41zM6.34 17.66l-1.41 1.41c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.41-1.41c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0zm12.72 1.41l-1.41-1.41c-.39-.39-1.02-.39-1.41 0-.39.39-.39 102 0 1.41l1.41 1.41c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41zM6.34 6.34L4.93 7.76c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.41-1.41c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0z"/>';
             } else {
-                // Moon Icon for Dark Mode
                 icon.innerHTML = '<path d="M12 3c.49 0 .96.05 1.42.15-3.08.7-5.42 3.39-5.42 6.6 0 3.71 3.01 6.72 6.72 6.72 3.21 0 5.9-2.34 6.6-5.42.1.46.15.93.15 1.42 0 5.25-4.25 9.5-9.5 9.5s-9.5-4.25-9.5-9.5 4.25-9.5 9.5-9.5z"/>';
             }
         }
@@ -732,8 +734,8 @@
             const qualitySelect = document.getElementById('qualitySelect');
             const playlistBadge = document.getElementById('playlistBadge');
 
-            previewCard.style.display = 'none';
-            skeletonCard.style.display = 'block';
+            if (previewCard) previewCard.style.display = 'none';
+            if (skeletonCard) skeletonCard.style.display = 'block';
 
             try {
                 const response = await fetch('/get-info', {
@@ -744,49 +746,60 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    document.getElementById('prevImg').src = data.thumbnail || '';
-                    document.getElementById('prevTitle').innerText = data.title || 'Instagram Post';
-                    document.getElementById('prevMeta').innerText = `Duration: ${data.duration || 'N/A'} | By: ${data.uploader || 'Instagram User'}`;
                     
-                    if (data.is_playlist) {
-                        const badgeText = translations[currentLang]["playlist_info"].replace('{count}', data.playlist_count || 0);
-                        playlistBadge.innerText = badgeText;
-                        playlistBadge.style.display = 'inline-block';
-                    } else {
-                        playlistBadge.style.display = 'none';
+                    const prevImg = document.getElementById('prevImg');
+                    if (prevImg) prevImg.src = data.thumbnail || '';
+
+                    const prevTitle = document.getElementById('prevTitle');
+                    if (prevTitle) prevTitle.innerText = data.title || 'Media';
+
+                    const prevMeta = document.getElementById('prevMeta');
+                    if (prevMeta) prevMeta.innerText = `Duration: ${data.duration || 'N/A'}`;
+                    
+                    if (playlistBadge) {
+                        if (data.is_playlist) {
+                            const badgeText = translations[currentLang]["playlist_info"].replace('{count}', data.playlist_count || 0);
+                            playlistBadge.innerText = badgeText;
+                            playlistBadge.style.display = 'inline-block';
+                        } else {
+                            playlistBadge.style.display = 'none';
+                        }
                     }
 
-                    qualitySelect.innerHTML = `<option value="best">${translations[currentLang]["opt_best"]}</option>`;
-                    if (data.qualities && data.qualities.length > 0) {
-                        data.qualities.forEach(q => {
-                            const opt = document.createElement('option');
-                            opt.value = q.format_id;
-                            opt.innerText = q.label;
-                            qualitySelect.appendChild(opt);
-                        });
+                    if (qualitySelect) {
+                        qualitySelect.innerHTML = `<option value="best">${translations[currentLang]["opt_best"]}</option>`;
+                        if (data.formats && data.formats.length > 0) {
+                            data.formats.forEach(f => {
+                                const opt = document.createElement('option');
+                                opt.value = f.resolution;
+                                opt.innerText = `${f.resolution} (${f.ext})`;
+                                qualitySelect.appendChild(opt);
+                            });
+                        }
+                        qualitySelect.innerHTML += `<option value="mp3">${translations[currentLang]["opt_mp3"]}</option>`;
                     }
-                    qualitySelect.innerHTML += `<option value="mp3">${translations[currentLang]["opt_mp3"]}</option>`;
 
-                    skeletonCard.style.display = 'none';
-                    previewCard.style.display = 'block';
+                    if (skeletonCard) skeletonCard.style.display = 'none';
+                    if (previewCard) previewCard.style.display = 'block';
                 } else {
-                    skeletonCard.style.display = 'none';
+                    if (skeletonCard) skeletonCard.style.display = 'none';
                 }
             } catch (e) {
-                skeletonCard.style.display = 'none';
-                previewCard.style.display = 'none';
+                if (skeletonCard) skeletonCard.style.display = 'none';
+                if (previewCard) previewCard.style.display = 'none';
             }
         }
 
         function triggerConfetti() {
             const canvas = document.getElementById('confettiCanvas');
+            if (!canvas) return;
             const ctx = canvas.getContext('2d');
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
 
             let pieces = [];
             const numberOfPieces = 100;
-            const colors = ['#e1306c', '#f09433', '#e6683c', '#dc2743', '#cc2366', '#bc1888', '#10b981'];
+            const colors = ['#ff0000', '#b91c1c', '#ef4444', '#f87171', '#10b981'];
 
             for (let i = 0; i < numberOfPieces; i++) {
                 pieces.push({
@@ -830,6 +843,7 @@
 
         function triggerSuccessGlow() {
             const card = document.getElementById('mainContainer');
+            if (!card) return;
             card.style.transform = 'scale(1.02)';
             card.style.borderColor = '#10b981';
             card.style.boxShadow = '0 0 50px rgba(16, 185, 129, 0.5)';
@@ -839,15 +853,20 @@
             setTimeout(() => {
                 card.style.transform = 'scale(1)';
                 card.style.borderColor = 'var(--border)';
-                card.style.boxShadow = '0 20px 50px rgba(0,0,0,0.5), 0 0 35px rgba(225, 48, 108, 0.15)';
+                card.style.boxShadow = '0 20px 50px rgba(0,0,0,0.5), 0 0 35px rgba(255, 0, 0, 0.15)';
             }, 1500);
         }
 
         async function startDownload() {
-            const url = document.getElementById('videoUrl').value.trim();
-            const format = document.getElementById('qualitySelect').value;
-            const startTime = document.getElementById('startTime').value;
-            const endTime = document.getElementById('endTime').value;
+            const urlInput = document.getElementById('videoUrl');
+            const qualitySelect = document.getElementById('qualitySelect');
+            const startTimeInput = document.getElementById('startTime');
+            const endTimeInput = document.getElementById('endTime');
+
+            const url = urlInput ? urlInput.value.trim() : '';
+            const format = qualitySelect ? qualitySelect.value : 'best';
+            const startTime = startTimeInput ? startTimeInput.value : '';
+            const endTime = endTimeInput ? endTimeInput.value : '';
 
             const progressBarContainer = document.getElementById('progressBarContainer');
             const progressBar = document.getElementById('progressBar');
@@ -856,16 +875,18 @@
 
             if (activeEventSource) activeEventSource.close();
 
-            progressBarContainer.style.display = 'block';
-            progressBar.style.width = '0%';
-            progressBar.innerText = '0%';
+            if (progressBarContainer) progressBarContainer.style.display = 'block';
+            if (progressBar) {
+                progressBar.style.width = '0%';
+                progressBar.innerText = '0%';
+            }
 
             const taskId = 'task_' + Date.now();
 
             activeEventSource = new EventSource(`/progress/${taskId}`);
             activeEventSource.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                if (data.percent !== undefined) {
+                if (data.percent !== undefined && progressBar) {
                     const pct = Math.round(data.percent);
                     progressBar.style.width = pct + '%';
                     
@@ -896,20 +917,22 @@
                 const data = await response.json();
 
                 if (response.ok && data.download_url) {
-                    progressBar.style.width = '100%';
-                    progressBar.innerText = translations[currentLang]["msg_done"];
+                    if (progressBar) {
+                        progressBar.style.width = '100%';
+                        progressBar.innerText = translations[currentLang]["msg_done"];
+                    }
                     triggerSuccessGlow();
                     if (activeEventSource) activeEventSource.close();
 
                     window.location.href = data.download_url;
                 } else {
                     alert(data.error || translations[currentLang]["msg_err"]);
-                    progressBarContainer.style.display = 'none';
+                    if (progressBarContainer) progressBarContainer.style.display = 'none';
                     if (activeEventSource) activeEventSource.close();
                 }
             } catch (error) {
                 alert(translations[currentLang]["msg_server"]);
-                progressBarContainer.style.display = 'none';
+                if (progressBarContainer) progressBarContainer.style.display = 'none';
                 if (activeEventSource) activeEventSource.close();
             }
         }
@@ -921,6 +944,11 @@
             const savedTheme = localStorage.getItem('app_theme') || 'dark';
             document.documentElement.setAttribute('data-theme', savedTheme);
             updateThemeIcon(savedTheme);
+
+            const videoUrlInput = document.getElementById('videoUrl');
+            if (videoUrlInput) {
+                videoUrlInput.addEventListener('input', checkVideoInfo);
+            }
         });
     </script>
 
