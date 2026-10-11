@@ -59,6 +59,7 @@ limiter = Limiter(
 )
 
 visitor_logs = []
+download_history = []  # مێژووی داگرتنەکان
 
 
 @app.before_request
@@ -284,6 +285,11 @@ def serve_downloaded_file(filename):
   )
 
 
+@app.route('/history', methods=['GET'])
+def get_download_history():
+  return jsonify(download_history[-20:])  # دواین ٢٠ دانە دەگەڕێنێتەوە[cite: 4]
+
+
 @app.route('/progress/<task_id>')
 def progress_stream(task_id):
   def event_stream():
@@ -320,6 +326,7 @@ def get_video_info():
       info = ydl.extract_info(url, download=False)
       is_playlist = 'entries' in info
       duration = info.get('duration', 0) or 0
+      playlist_count = len(info['entries']) if is_playlist else 0
 
       thumbnail_url = info.get('thumbnail', '')
       if not thumbnail_url and 'thumbnails' in info and info['thumbnails']:
@@ -350,6 +357,7 @@ def get_video_info():
           'title': info.get('title', 'Media'),
           'thumbnail': thumbnail_url,
           'is_playlist': is_playlist,
+          'playlist_count': playlist_count,
           'duration': duration,
           'formats': formats,
       })
@@ -370,6 +378,24 @@ def download_video():
   if not url:
     return jsonify({'error': 'URL is required'}), 400
 
+  q = queue.Queue()
+  progress_queues[task_id] = q
+
+  # پشکنینی کاش (Cache check لە R2) پێش دەستپێکردنی داگرتن
+  safe_prefix = sanitize_filename(url, 20)
+  
+  if s3_client and R2_BUCKET_NAME:
+    try:
+      response_s3 = s3_client.list_objects_v2(Bucket=R2_BUCKET_NAME, MaxKeys=50)
+      if 'Contents' in response_s3:
+        for obj in response_s3['Contents']:
+          obj_key = obj['Key']
+          if url in obj_key or (hash(url) % 1000000) in obj_key:
+            q.put({'percent': 100, 'status': 'completed'})
+            return jsonify({'download_url': f'/downloads/{obj_key}'})
+    except Exception as cache_err:
+      print(f'Cache Check Error: {cache_err}')
+
   if not start_time and not end_time:
     try:
       check_opts = get_base_ydl_opts(url)
@@ -377,7 +403,7 @@ def download_video():
       with yt_dlp.YoutubeDL(check_opts) as ydl:
         info_meta = ydl.extract_info(url, download=False)
         dur = info_meta.get('duration', 0) or 0
-        if dur > 3600:
+        if dur > 3600 and not 'entries' in info_meta:
           return (
               jsonify({
                   'error': (
@@ -390,9 +416,6 @@ def download_video():
           )
     except Exception as e:
       print(f'Duration Check Error: {e}')
-
-  q = queue.Queue()
-  progress_queues[task_id] = q
 
   postprocessors = []
 
@@ -449,20 +472,47 @@ def download_video():
   try:
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
       info = ydl.extract_info(url, download=True)
-      downloaded_files = os.listdir(task_download_dir)
-      if not downloaded_files:
-        raise Exception('No file downloaded')
+      
+      is_playlist_dl = 'entries' in info
+      if is_playlist_dl:
+        zip_filename = f"{sanitize_filename(info.get('title', 'playlist'))}_playlist.zip"
+        zip_path = os.path.join(DOWNLOAD_DIR, zip_filename)
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+          for root, dirs, files in os.walk(task_download_dir):
+            for file in files:
+              zipf.write(os.path.join(root, file), file)
+        shutil.rmtree(task_download_dir, ignore_errors=True)
+        final_file_name = zip_filename
+      else:
+        downloaded_files = os.listdir(task_download_dir)
+        if not downloaded_files:
+          raise Exception('No file downloaded')
 
-      single_file = os.path.join(task_download_dir, downloaded_files[0])
-      safe_title = sanitize_filename(info.get('title', 'video'))
-      ext = 'mp3' if format_type == 'mp3' else single_file.split('.')[-1]
-      file_key = f'{safe_title}_{info.get("id", "media")}.{ext}'
-      final_file_path = os.path.join(DOWNLOAD_DIR, file_key)
-      os.rename(single_file, final_file_path)
-      shutil.rmtree(task_download_dir, ignore_errors=True)
+        single_file = os.path.join(task_download_dir, downloaded_files[0])
+        safe_title = sanitize_filename(info.get('title', 'video'))
+        ext = 'mp3' if format_type == 'mp3' else single_file.split('.')[-1]
+        final_file_name = f'{safe_title}_{info.get("id", "media")}.{ext}'
+        final_file_path = os.path.join(DOWNLOAD_DIR, final_file_name)
+        os.rename(single_file, final_file_path)
+        shutil.rmtree(task_download_dir, ignore_errors=True)
+
+      final_local_path = os.path.join(DOWNLOAD_DIR, final_file_name)
+      if s3_client and R2_BUCKET_NAME:
+        try:
+          s3_client.upload_file(final_local_path, R2_BUCKET_NAME, final_file_name)
+        except Exception as r2_err:
+          print(f'R2 Upload Error: {r2_err}')
+
+      # زیادکردنی فایلەکە بۆ مێژووی داگرتن
+      download_history.append({
+          'title': info.get('title', 'Media'),
+          'filename': final_file_name,
+          'url': f'/downloads/{final_file_name}',
+          'timestamp': time.strftime('%Y-%m-%d %H:%M:%S')
+      })
 
       q.put({'percent': 100, 'status': 'completed'})
-      return jsonify({'download_url': f'/downloads/{file_key}'})
+      return jsonify({'download_url': f'/downloads/{final_file_name}'})
   except Exception as e:
     q.put({'percent': 0, 'status': 'error', 'error': str(e)})
     return jsonify({'error': str(e)}), 500

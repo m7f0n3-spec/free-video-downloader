@@ -561,13 +561,27 @@
             <div class="preview-title" id="prevTitle"></div>
             <div class="preview-meta" id="prevMeta"></div>
         </div>
+        <!-- نیشانەی پلەیلیست یاخود کۆمەڵە وێنە -->
+        <div id="playlistBadge" class="alert alert-info" style="display: none; font-size: 14px; margin-top: 10px;"></div>
+
+        <div class="preview-card" id="previewCard" style="display: none;">
+            <img id="prevImg" src="" alt="Thumbnail" style="width: 100%; border-radius: 8px;">
+            <div class="preview-title" id="prevTitle" style="font-weight: bold; margin-top: 8px;"></div>
+            <div class="preview-meta" id="prevMeta" style="color: #888; font-size: 12px;"></div>
+        </div>
+        <div class="history-section mt-4" style="text-align: left; border-top: 1px solid var(--border); padding-top: 15px;">
+            <h4 style="font-size: 1rem; color: var(--text-muted); margin-bottom: 10px;" data-i18n="history_title">Recent Downloads 🕒</h4>
+            <ul id="downloadHistoryList" style="list-style: none; padding: 0; max-height: 150px; overflow-y: auto; font-size: 0.85rem;">
+                <!-- فایلی مێژووەکان لێرە بە شێوەی خۆکار زیاد دەبن -->
+            </ul>
+        </div>
 
         <div class="progress-bar" id="progressBarContainer">
             <div class="progress" id="progressBar">0%</div>
         </div>
     </div>
 
-    <script>
+<script>
         const translations = {
             en: {
                 "nav_home": "Home",
@@ -590,6 +604,7 @@
                 "msg_server": "Server Connection Error!",
                 "playlist_info": "Photo Slideshow/Carousel ({count} Items) - Will Download as ZIP",
                 "prompt_paste": "Please paste the video link here:"
+                "history_title": "Recent Downloads 🕒"
             },
             ku: {
                 "nav_home": "سەرەکی",
@@ -612,6 +627,7 @@
                 "msg_server": "کێشەی پەیوەندیکردن بە سێرڤەر!",
                 "playlist_info": "کۆمەڵە وێنە/مێدیا دیاریکرا ({count} بڕگە) - بە فایلی ZIP دادەبەزێت",
                 "prompt_paste": "تکایە بەستەرەکە (Link) لەم شوێنە بنووسە یان پەستای بکە:"
+                "history_title": "دواین فایلە داگیراوەکان 🕒"
             },
             ar: {
                 "nav_home": "الرئيسية",
@@ -634,6 +650,7 @@
                 "msg_server": "خطأ في الاتصال بالسيرفر!",
                 "playlist_info": "شرائح صور/وسائط متعددة ({count} عناصر) - سيتم التحميل بصيغة ZIP",
                 "prompt_paste": "الرجاء لصق رابط الفيديو هنا:"
+                "history_title": "التحميلات الأخيرة 🕒"
             }
         };
 
@@ -680,7 +697,7 @@
             const icon = document.getElementById('themeIcon');
             if (!icon) return;
             if (theme === 'light') {
-                icon.innerHTML = '<path d="M12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0-5c-.55 0-1 .45-1 1v2c0 .55.45 1 1 1s1-.45 1-1V4c0-.55-.45-1-1-1zm0 14c-.55 0-1 .45-1 1v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1zm10-7h-2c-.55 0-1 .45-1 1s.45 1 1 1h2c.55 0 1-.45 1-1s-.45-1-1-1zM5 12H3c-.55 0-1 .45-1 1s.45 1 1 1h2c.55 0 1-.45 1-1s-.45-1-1-1zm13.66-7.07c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.41 1.41c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.41-1.41zM6.34 17.66l-1.41 1.41c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.41-1.41c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0zm12.72 1.41l-1.41-1.41c-.39-.39-1.02-.39-1.41 0-.39.39-.39 102 0 1.41l1.41 1.41c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41zM6.34 6.34L4.93 7.76c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.41-1.41c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0z"/>';
+                icon.innerHTML = '<path d="M12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0-5c-.55 0-1 .45-1 1v2c0 .55.45 1 1 1s1-.45 1-1V4c0-.55-.45-1-1-1zm0 14c-.55 0-1 .45-1 1v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1zm10-7h-2c-.55 0-1 .45-1 1s.45 1 1 1h2c.55 0 1-.45 1-1s-.45-1-1-1zM5 12H3c-.55 0-1 .45-1 1s.45 1 1 1h2c.55 0 1-.45 1-1s-.45-1-1-1zm13.66-7.07c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.41 1.41c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.41-1.41zM6.34 17.66l-1.41 1.41c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.41-1.41c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0zm12.72 1.41l-1.41-1.41c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.41 1.41c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41zM6.34 6.34L4.93 7.76c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.41-1.41c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0z"/>';
             } else {
                 icon.innerHTML = '<path d="M12 3c.49 0 .96.05 1.42.15-3.08.7-5.42 3.39-5.42 6.6 0 3.71 3.01 6.72 6.72 6.72 3.21 0 5.9-2.34 6.6-5.42.1.46.15.93.15 1.42 0 5.25-4.25 9.5-9.5 9.5s-9.5-4.25-9.5-9.5 4.25-9.5 9.5-9.5z"/>';
             }
@@ -751,7 +768,7 @@
                         if (data.is_playlist) {
                             const badgeText = translations[currentLang]["playlist_info"].replace('{count}', data.playlist_count || 0);
                             playlistBadge.innerText = badgeText;
-                            playlistBadge.style.display = 'inline-block';
+                            playlistBadge.style.display = 'block';
                         } else {
                             playlistBadge.style.display = 'none';
                         }
@@ -940,6 +957,37 @@
             if (videoUrlInput) {
                 videoUrlInput.addEventListener('input', checkVideoInfo);
             }
+        });
+
+        async function loadDownloadHistory() {
+            try {
+                const response = await fetch('/history');
+                if (response.ok) {
+                    const history = await response.json();
+                    const listElem = document.getElementById('downloadHistoryList');
+                    if (!listElem) return;
+                    
+                    listElem.innerHTML = '';
+                    if (history.length === 0) {
+                        listElem.innerHTML = '<li style="color: var(--text-muted);">No recent downloads</li>';
+                        return;
+                    }
+
+                    history.reverse().forEach(item => {
+                        const li = document.createElement('li');
+                        li.style.marginBottom = '6px';
+                        li.innerHTML = `<a href="${item.url}" target="_blank" style="color: var(--primary); text-decoration: none; font-weight: 600;">📥 ${item.title}</a> <span style="font-size: 0.75rem; color: var(--text-muted);">(${item.timestamp})</span>`;
+                        listElem.appendChild(li);
+                    });
+                }
+            } catch (err) {
+                console.error("Failed to load history:", err);
+            }
+        }
+
+        // بانگکردنی فەنکشنەکە کاتێک پەڕەکە بار دەبێت
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDownloadHistory();
         });
     </script>
 
