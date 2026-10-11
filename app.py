@@ -381,16 +381,30 @@ def download_video():
   q = queue.Queue()
   progress_queues[task_id] = q
 
-  # پشکنینی کاش (Cache check لە R2) پێش دەستپێکردنی داگرتن
-  safe_prefix = sanitize_filename(url, 20)
-  
+  # سیستەمی پێشکەوتووی کاشکردن (R2 Cache Check)
+  # پشکنینی ئەوەی کە ئایا ئەم لینکە پێشتر دابەزێنراوە و لە R2 هەیە یان نە
   if s3_client and R2_BUCKET_NAME:
     try:
-      response_s3 = s3_client.list_objects_v2(Bucket=R2_BUCKET_NAME, MaxKeys=50)
+      response_s3 = s3_client.list_objects_v2(Bucket=R2_BUCKET_NAME, MaxKeys=100)
       if 'Contents' in response_s3:
         for obj in response_s3['Contents']:
           obj_key = obj['Key']
-          if url in obj_key or (hash(url) % 1000000) in obj_key:
+          # پشکنینی ناوەڕۆک یان بوونی فایلەکە بۆ ڕێگریکردن لە داگرتنی دووبارە
+          if (
+              url in obj_key
+              or sanitize_filename(url, 15) in obj_key
+              or any(h.get('filename') == obj_key for h in download_history)
+          ):
+            # دابەزاندنی ڕاستەوخۆی فایلەکە لە R2 بۆ فۆڵدەری خۆجێیی ئەگەر نەبوو
+            local_cached_path = os.path.join(DOWNLOAD_DIR, obj_key)
+            if not os.path.exists(local_cached_path):
+              try:
+                s3_client.download_file(
+                    R2_BUCKET_NAME, obj_key, local_cached_path
+                )
+              except Exception as dl_err:
+                print(f'R2 Download Cache Error: {dl_err}')
+
             q.put({'percent': 100, 'status': 'completed'})
             return jsonify({'download_url': f'/downloads/{obj_key}'})
     except Exception as cache_err:
@@ -472,7 +486,7 @@ def download_video():
   try:
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
       info = ydl.extract_info(url, download=True)
-      
+
       is_playlist_dl = 'entries' in info
       if is_playlist_dl:
         zip_filename = f"{sanitize_filename(info.get('title', 'playlist'))}_playlist.zip"
@@ -503,12 +517,11 @@ def download_video():
         except Exception as r2_err:
           print(f'R2 Upload Error: {r2_err}')
 
-      # زیادکردنی فایلەکە بۆ مێژووی داگرتن
       download_history.append({
           'title': info.get('title', 'Media'),
           'filename': final_file_name,
           'url': f'/downloads/{final_file_name}',
-          'timestamp': time.strftime('%Y-%m-%d %H:%M:%S')
+          'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
       })
 
       q.put({'percent': 100, 'status': 'completed'})
