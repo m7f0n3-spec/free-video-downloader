@@ -603,7 +603,7 @@
                 "msg_err": "Error occurred during download.",
                 "msg_server": "Server Connection Error!",
                 "playlist_info": "Photo Slideshow/Carousel ({count} Items) - Will Download as ZIP",
-                "prompt_paste": "Please paste the video link here:"
+                "prompt_paste": "Please paste the video link here:",
                 "history_title": "Recent Downloads 🕒"
             },
             ku: {
@@ -626,7 +626,7 @@
                 "msg_err": "هەڵەیەک ڕوویدا لە کاتی داگرتن.",
                 "msg_server": "کێشەی پەیوەندیکردن بە سێرڤەر!",
                 "playlist_info": "کۆمەڵە وێنە/مێدیا دیاریکرا ({count} بڕگە) - بە فایلی ZIP دادەبەزێت",
-                "prompt_paste": "تکایە بەستەرەکە (Link) لەم شوێنە بنووسە یان پەستای بکە:"
+                "prompt_paste": "تکایە بەستەرەکە (Link) لەم شوێنە بنووسە یان پەستای بکە:",
                 "history_title": "دواین فایلە داگیراوەکان 🕒"
             },
             ar: {
@@ -649,7 +649,7 @@
                 "msg_err": "حدث خطأ أثناء التحميل.",
                 "msg_server": "خطأ في الاتصال بالسيرفر!",
                 "playlist_info": "شرائح صور/وسائط متعددة ({count} عناصر) - سيتم التحميل بصيغة ZIP",
-                "prompt_paste": "الرجاء لصق رابط الفيديو هنا:"
+                "prompt_paste": "الرجاء لصق رابط الفيديو هنا:",
                 "history_title": "التحميلات الأخيرة 🕒"
             }
         };
@@ -945,20 +945,6 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedLang = localStorage.getItem('app_lang') || 'en';
-            changeLanguage(savedLang);
-
-            const savedTheme = localStorage.getItem('app_theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            updateThemeIcon(savedTheme);
-
-            const videoUrlInput = document.getElementById('videoUrl');
-            if (videoUrlInput) {
-                videoUrlInput.addEventListener('input', checkVideoInfo);
-            }
-        });
-
         async function loadDownloadHistory() {
             try {
                 const response = await fetch('/history');
@@ -985,8 +971,19 @@
             }
         }
 
-        // بانگکردنی فەنکشنەکە کاتێک پەڕەکە بار دەبێت
         document.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('app_lang') || 'en';
+            changeLanguage(savedLang);
+
+            const savedTheme = localStorage.getItem('app_theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+
+            const videoUrlInput = document.getElementById('videoUrl');
+            if (videoUrlInput) {
+                videoUrlInput.addEventListener('input', checkVideoInfo);
+            }
+
             loadDownloadHistory();
         });
     </script>
