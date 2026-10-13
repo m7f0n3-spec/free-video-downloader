@@ -26,7 +26,7 @@ BANNED_IPS = (
 )
 
 # پڕۆکسی نوێی سەنتەر کراوە
-WEB_PROXY = 'http://ockaayuq:f12eoampzbrs@31.59.20.176:6754/'
+WEB_PROXY = ''
 
 PROXY_URL = os.getenv('PROXY_URL', WEB_PROXY)
 PROXY_LIST_ENV = os.getenv('PROXY_LIST')
