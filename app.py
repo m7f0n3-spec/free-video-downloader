@@ -25,9 +25,8 @@ BANNED_IPS = (
     else set()
 )
 
-# پڕۆکسی نوێی سەنتەر کراوە
+# بەتاڵکردنەوەی پڕۆکسی بە شێوەی خۆکار ئەگەر پێویست نەبێت یان دابینکردنی لە ڕێگەی Env
 WEB_PROXY = ''
-
 PROXY_URL = os.getenv('PROXY_URL', WEB_PROXY)
 PROXY_LIST_ENV = os.getenv('PROXY_LIST')
 PROXIES = (
@@ -228,9 +227,9 @@ def get_base_ydl_opts(url=None):
       'extractor_args': yt_extractor_args,
       'js_runtimes': {'node': {}},
       'concurrent_fragment_downloads': 4,
-      'retries': 15,
-      'fragment_retries': 15,
-      'socket_timeout': 30,
+      'retries': 10,
+      'fragment_retries': 10,
+      'socket_timeout': 15,  # کەمکردنەوەی چاوەڕوانی بۆ خێراکردنی وەڵامدانەوە
       'http_headers': {
           'User-Agent': (
               'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
@@ -287,7 +286,7 @@ def serve_downloaded_file(filename):
 
 @app.route('/history', methods=['GET'])
 def get_download_history():
-  return jsonify(download_history[-20:])  # دواین ٢٠ دانە دەگەڕێنێتەوە[cite: 4]
+  return jsonify(download_history[-20:])
 
 
 @app.route('/progress/<task_id>')
@@ -311,7 +310,7 @@ def progress_stream(task_id):
 
 
 @app.route('/get-info', methods=['POST'])
-@limiter.limit('20 per minute')
+@limiter.limit('30 per minute')
 def get_video_info():
   data = request.json or {}
   url = data.get('url')
@@ -335,7 +334,6 @@ def get_video_info():
       if not thumbnail_url and 'id' in info:
         thumbnail_url = f"https://i.ytimg.com/vi/{info['id']}/hqdefault.jpg"
 
-      # هێنانی فۆرمات و کوالێتییەکان
       formats = []
       if not is_playlist and 'formats' in info:
         seen_resolutions = set()
@@ -366,7 +364,7 @@ def get_video_info():
 
 
 @app.route('/download', methods=['POST'])
-@limiter.limit('10 per minute')
+@limiter.limit('15 per minute')
 def download_video():
   data = request.json or {}
   url = data.get('url')
@@ -381,32 +379,26 @@ def download_video():
   q = queue.Queue()
   progress_queues[task_id] = q
 
-  # سیستەمی پێشکەوتووی کاشکردن (R2 Cache Check)
-  # پشکنینی ئەوەی کە ئایا ئەم لینکە پێشتر دابەزێنراوە و لە R2 هەیە یان نە
+  # خێراکردنی پشکنینی کاش بە بەکارهێنانی کلیلێکی دیاریکراو نەک گەڕانی گشتی
   if s3_client and R2_BUCKET_NAME:
     try:
-      response_s3 = s3_client.list_objects_v2(Bucket=R2_BUCKET_NAME, MaxKeys=100)
-      if 'Contents' in response_s3:
-        for obj in response_s3['Contents']:
-          obj_key = obj['Key']
-          # پشکنینی ناوەڕۆک یان بوونی فایلەکە بۆ ڕێگریکردن لە داگرتنی دووبارە
-          if (
-              url in obj_key
-              or sanitize_filename(url, 15) in obj_key
-              or any(h.get('filename') == obj_key for h in download_history)
-          ):
-            # دابەزاندنی ڕاستەوخۆی فایلەکە لە R2 بۆ فۆڵدەری خۆجێیی ئەگەر نەبوو
-            local_cached_path = os.path.join(DOWNLOAD_DIR, obj_key)
-            if not os.path.exists(local_cached_path):
-              try:
-                s3_client.download_file(
-                    R2_BUCKET_NAME, obj_key, local_cached_path
-                )
-              except Exception as dl_err:
-                print(f'R2 Download Cache Error: {dl_err}')
-
-            q.put({'percent': 100, 'status': 'completed'})
-            return jsonify({'download_url': f'/downloads/{obj_key}'})
+      # پشکنینی خێرا لە مێژووی ناوخۆیی یان گەڕانێکی کورت
+      matched_history = next(
+          (h for h in download_history if h.get('url') and url in h.get('url')),
+          None,
+      )
+      if matched_history:
+        cached_file = matched_history.get('filename')
+        local_cached_path = os.path.join(DOWNLOAD_DIR, cached_file)
+        if not os.path.exists(local_cached_path):
+          try:
+            s3_client.download_file(
+                R2_BUCKET_NAME, cached_file, local_cached_path
+            )
+          except Exception:
+            pass
+        q.put({'percent': 100, 'status': 'completed'})
+        return jsonify({'download_url': f'/downloads/{cached_file}'})
     except Exception as cache_err:
       print(f'Cache Check Error: {cache_err}')
 
@@ -433,6 +425,7 @@ def download_video():
 
   postprocessors = []
 
+  # فۆرماتی خێرا و نەرمتر بۆ ڕێگریکردن لە کێشەی مێرج و خاوپێکان
   if format_type == 'mp3':
     format_spec = 'bestaudio/best'
     postprocessors.append({
@@ -508,11 +501,21 @@ def download_video():
         shutil.rmtree(task_download_dir, ignore_errors=True)
 
       final_local_path = os.path.join(DOWNLOAD_DIR, final_file_name)
+
+      # ئەپڵۆدکردنی فایلی ئەپڵۆد بۆ R2 لە پشتەوە (Background) بۆ خێراکردنی کارەکە بۆ بەکارهێنەر
+      def upload_to_r2_background(local_path, file_name):
+        if s3_client and R2_BUCKET_NAME:
+          try:
+            s3_client.upload_file(local_path, R2_BUCKET_NAME, file_name)
+          except Exception as r2_err:
+            print(f'R2 Upload Error: {r2_err}')
+
       if s3_client and R2_BUCKET_NAME:
-        try:
-          s3_client.upload_file(final_local_path, R2_BUCKET_NAME, final_file_name)
-        except Exception as r2_err:
-          print(f'R2 Upload Error: {r2_err}')
+        threading.Thread(
+            target=upload_to_r2_background,
+            args=(final_local_path, final_file_name),
+            daemon=True,
+        ).start()
 
       download_history.append({
           'title': info.get('title', 'Media'),
