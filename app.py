@@ -207,7 +207,7 @@ def fetch_po_token():
 def get_base_ydl_opts(url=None):
   yt_extractor_args = {
       'youtube': {
-          'player_client': ['android'],
+          'player_client': ['ios', 'android'],
       },
       'tiktok': {
           'app_version': '35.1.1',
@@ -441,11 +441,10 @@ def download_video():
         'preferredquality': '128',
     })
   elif format_type == 'best':
-    # گۆڕینی بۆ باشترین فۆرماتی تێکەڵ یان باشترین بە تەنها بۆ ئەوەی کێشەی مێرج دروست نەبێت
-    format_spec = 'best[ext=mp4]/best'
+    format_spec = 'bv*+ba/b'
   else:
     height_val = format_type.replace('p', '')
-    format_spec = f'best[height<={height_val}][ext=mp4]/best[height<={height_val}]/best'
+    format_spec = f'bv*[height<={height_val}]+ba/b[height<={height_val}]/b'
 
   def progress_hook(d):
     if d['status'] == 'downloading':
