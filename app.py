@@ -441,13 +441,11 @@ def download_video():
         'preferredquality': '128',
     })
   elif format_type == 'best':
-    format_spec = 'best/bestvideo+bestaudio'
+    # گۆڕینی بۆ باشترین فۆرماتی تێکەڵ یان باشترین بە تەنها بۆ ئەوەی کێشەی مێرج دروست نەبێت
+    format_spec = 'best[ext=mp4]/best'
   else:
     height_val = format_type.replace('p', '')
-    format_spec = (
-        f'bestvideo[height<={height_val}]+bestaudio/best[height<={height_val}]'
-        f'/best'
-    )
+    format_spec = f'best[height<={height_val}][ext=mp4]/best[height<={height_val}]/best'
 
   def progress_hook(d):
     if d['status'] == 'downloading':
